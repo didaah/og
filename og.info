@@ -1,0 +1,9 @@
+<?php
+// $Id$
+$info = array(
+  'name' => '群组',
+  'description' => '提供群组功能',
+  'ver' => '1.0',
+  'language' => 'zh-hans',
+  'dependencies' => array('comment'), // 依赖评论模块
+);

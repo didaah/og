@@ -1,0 +1,220 @@
+/* $Id$*/
+/*admin*/
+.og_admin_table td{
+  text-align: center;
+}
+td.og_admin_td_title, .og_node_list_title{
+  text-align: left;
+}
+/*form*/
+#og_form_type span.form_radio_field, #og_form_type span.description,
+#og_update_form_type span.form_radio_field, #og_update_form_type span.description{
+	display: block;
+	margin: 5px 0 5px 60px;
+}
+.og_user_table{
+	text-align: center;
+}
+.og_user_table .og_user_table_logo img{
+	max-width: 50px;
+	max-height: 50px;
+}
+/*og user*/
+.og_view_users li{
+	float: left;
+	height: 110px;
+	width: 100px;
+	text-align: center;
+}
+.og_view_users li img{
+	display: block;
+	margin: 0 auto;
+}
+/*og.tpl.php*/
+.og_title {
+  margin: 6px 0;
+}
+.og_info, .og_term_description {
+	background: #FFF6EE;
+	border: 1px solid #F7E8D1;
+	overflow: auto;
+	margin: 5px 0;
+}
+
+.og_term_description {
+  padding: 8px;
+}
+
+.og_info_logo{
+	float: left;
+	margin: 5px;
+}
+
+.og_info_content{
+	margin: 5px;
+}
+
+.og_info_link, .og_node_view_links, .og_node_comment_links{
+	clear: both;
+	height: 30px;
+	line-height: 30px;
+	padding-right: 12px;
+	text-align: right;
+}
+
+.og_info_link a, .og_node_view_links a, .og_node_comment_links a{
+	padding: 0 5px;
+}
+
+.og_info_header_create{
+	padding-right: 6px;
+}
+
+.og_info_header{
+	color: #644B27
+}
+
+.og_info_des{
+	margin-top: 8px;
+}
+
+.og_node_list_user, .og_node_list_comment, .og_node_list_create, .og_node_list_og_name{
+	text-align: center;
+}
+
+.og_node_list_update {
+  text-align: right;
+}
+
+/*node.tpl.php*/
+.og_node_view_node{
+  border-bottom: 1px solid #E8F7D8;
+  overflow: auto;
+  clear: both;
+}
+
+.og_info_link_node_type{
+	color: #273605;
+	padding-right: 8px;
+}
+
+.og_node_view_header{
+	padding: 6px;
+	border-bottom: 1px solid #eee;
+	border-top: 1px solid #eee;
+}
+
+.og_node_view_header a {
+	padding-right: 10px;
+}
+
+.og_node_view_fields_list_file, .og_node_view_fields_list_textarea {
+	border-bottom: 1px solid #eee;
+}
+
+.og_node_view_fields_list_file span, .og_node_view_fields_list_textarea span {
+  display: block;
+  padding:5px 10px;
+}
+
+.og_node_view_body{
+	padding: 6px;
+	line-height: 20px;
+}
+
+/*comment*/
+.og_node_view_comments{
+	padding: 10px 0;
+	clear: both;
+}
+
+.og_node_view_comments_message {
+	text-align: right;
+}
+
+/*settings*/
+.og_settings_logs td{
+	text-align: center;
+}
+
+#og_update_logo div{
+	margin: 6px 0;
+}
+
+#og_update_logo .description{
+	display: block;
+	margin: 6px 0;
+}
+
+#og_update_logo_image ul{
+	clear: both;
+	overflow: hidden;
+}
+
+#og_update_logo_image ul li{
+	float: left;
+	margin: 2px;
+}
+
+#og_update_logo_image ul li img{
+	padding: 3px;
+	border: 1px solid #ccc;
+}
+
+.og_settings_nodes td, .og_settings_users td{
+	text-align: center;
+}
+
+.og_settings_nodes td.og_settings_nodes_title{
+	text-align: left;
+}
+
+/*logout*/
+.og_logout_link{
+  display: block;
+  padding: 12px;
+  text-align: center;
+  margin: 10 0;
+  font-size: 16px;
+}
+
+/*lists*/
+.og_node_list_og_name a {
+  color: #958989;
+}
+
+.og_node_list_update {
+  color:#898989;
+}
+
+#og_node_list_table_user_comment .og_node_list_title, #og_node_list_table_user_node .og_node_list_title {
+  width: 300px;
+}
+
+/*block*/
+.block_module_og .item-list li {
+  padding: 0;
+  margin: 0;
+}
+
+.block_module_og .item-list li a
+{
+	display: block;
+	padding: 5px 0;
+	border-bottom: 1px solid #ccc;
+}
+
+.block_module_og .item-list li a:hover {
+  background: #F5FAF2;
+}
+
+#block_og_user_avatar .item-list li {
+	padding: 5px 0;
+	text-align: center;
+	border-bottom: 1px solid #ccc;
+}
+
+#block_og_user_avatar .item-list li a {
+  padding: 0;
+  border: none;
+}

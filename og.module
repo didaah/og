@@ -1,0 +1,1693 @@
+<?php
+// $Id$
+
+/**
+ * @Implement of hook_menu()
+ */
+function og_menu() {
+  $items = array();
+  
+  $items['group/%'] = array(
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_view',
+    'access_arguments' => array(1),
+    'page_callback' => 'og_view',
+    'page_arguments' => array(1),
+  );
+  
+  $items['group/%/user'] = array(
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_view',
+    'access_arguments' => array(1),
+    'page_callback' => 'og_view_user',
+    'page_arguments' => array(1),
+    'file' => 'og.page.inc',
+  );
+  
+  $items['group/node/%'] = array(
+    'load_functions' => array(2 => array('og_node_load')),
+    'access_callback' => 'og_access_node_view',
+    'access_arguments' => array(2),
+    'page_callback' => 'og_node_view',
+    'page_arguments' => array(2),
+    'file' => 'og.page.inc',
+  );
+  
+  $items['group/%/add/%'] = array(
+    'load_functions' => array(1 => array('og_load', 0), 3 => '%a-z'),
+    'access_callback' => 'og_access_node_create',
+    'access_arguments' => array(1, 3, 'true'),
+    'page_callback' => 'dd_get_form',
+    'page_arguments' => array('og_node_form', 1),
+    'file' => 'og.node.inc',
+  );
+
+  $items['group/node/edit/%'] = array(
+    'load_functions' => array(3 => array('og_node_load')),
+    'access_callback' => 'og_access_node_update',
+    'access_arguments' => array(3),
+    'page_callback' => 'dd_get_form',
+    'page_arguments' => array('og_node_form', 3),
+    'file' => 'og.node.inc',
+  );
+  
+  $items['group/node/delete/%'] = array(
+    'load_functions' => array(3 => array('og_node_load')),
+    'access_callback' => 'og_access_node_delete',
+    'access_arguments' => array(3),
+    'page_callback' => 'og_node_delete',
+    'page_arguments' => array(3),
+  );
+  
+  $items['group/node/status/%'] = array(
+    'load_functions' => array(3 => array('og_node_load')),
+    'access_callback' => 'og_access_node_status',
+    'access_arguments' => array(3),
+    'page_callback' => 'og_node_status',
+    'page_arguments' => array(3),
+    'file' => 'og.node.inc',
+  );
+  
+  $items['group/%/settings'] = array(
+    'title' => '小组设置',
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_update',
+    'access_arguments' => array(1),
+    'page_callback' => 'og_update',
+    'page_arguments' => array(1),
+    'file' => 'og.setting.inc',
+  );
+  
+  $items['group/%/join'] = array(
+    'description' => '加入小组',
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_join',
+    'access_arguments' => array(1),
+    'page_callback' => 'dd_get_form',
+    'page_arguments' => array('og_join', 1),
+    'file' => 'og.page.inc',
+  );
+  $items['group/%/logout'] = array(
+    'description' => '退出小组',
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_logout',
+    'access_arguments' => array(1),
+    'page_callback' => 'og_logout',
+    'page_arguments' => array(1),
+    'file' => 'og.page.inc',
+  );
+  
+  $items['group/%/delete'] = array(
+    'description' => '删除小组',
+    'load_functions' => array(1 => array('og_load')),
+    'access_callback' => 'og_access_delete',
+    'access_arguments' => array(1),
+    'page_callback' => 'og_delete',
+    'page_arguments' => array(1),
+    'file' => 'og.setting.inc',
+  );
+  
+  $items['group/all'] = array(
+    'title' => '小组',
+    'access_arguments' => array('og view'),
+    'page_callback' => 'og_page_all',
+    'file' => 'og.page.inc',
+  );
+  
+  $items['group/node'] = array(
+    'title' => '话题',
+    'access_arguments' => array('og view'),
+    'page_callback' => 'og_page_node',
+    'file' => 'og.page.inc',
+  );
+  
+  $items['group/add'] = array(
+    'title' => '创建小组',
+    'access_arguments' => array('og add'),
+    'page_callback' => 'dd_get_form',
+    'page_arguments' => array('og_form'),
+    'file' => 'og.form.inc',
+  );
+  
+  $items['admin/og'] = array(
+    'title' => '小组管理',
+    'access_arguments' => array('admin og'),
+    'page_callback' => 'og_admin_view',
+    'file' => 'og.admin.inc',
+  );
+  
+  $items['admin/og/status'] = array(
+    'title' => '小组审核',
+    'access_arguments' => array('admin og status'),
+    'page_callback' => 'og_admin_status',
+    'file' => 'og.admin.inc',
+  );
+   
+  $items['admin/og/node/fields'] = array(
+    'title' => '话题通用字段',
+    'access_arguments' => array('admin og node fields'),
+    'page_callback' => 'og_admin_node_fields',
+    'file' => 'og.admin.inc',
+  );
+  
+  $items['admin/og/node'] = array(
+    'title' => '话题管理',
+    'access_arguments' => array('admin og node'),
+    'page_callback' => 'og_admin_node',
+    'file' => 'og.admin.inc',
+  );
+  
+  $items['admin/og/settings'] = array(
+    'title' => '小组设置',
+    'access_arguments' => array('admin og settings'),
+    'page_callback' => 'dd_get_form',
+    'page_arguments' => array('og_admin_settings'),
+    'file' => 'og.admin.inc',
+  );
+  
+  $items['user/%/group'] = array(
+    'load_functions' => array(1 => array('user_load')),
+    'access_arguments' => array('og view'),
+    'page_callback' => 'og_user_view',
+    'page_arguments' => array(1),
+    'file' => 'og.page.inc',
+    'description' => '用户创建和加入的小组',
+  );
+  $items['user/%/group/node'] = array(
+    'load_functions' => array(1 => array('user_load')),
+    'access_arguments' => array('og view'),
+    'page_callback' => 'og_user_node',
+    'page_arguments' => array(1),
+    'file' => 'og.page.inc',
+    'description' => '用户创建的话题',
+  );
+  $items['user/%/group/comment'] = array(
+    'load_functions' => array(1 => array('user_load')),
+    'access_arguments' => array('og view'),
+    'page_callback' => 'og_user_comment',
+    'page_arguments' => array(1),
+    'file' => 'og.page.inc',
+    'description' => '用户评论过话题',
+  );
+  return $items;
+}
+
+/**
+ * @Implement of hook_prem()
+ */
+function og_perm() {
+  return array(
+    'og add' => '创建小组 ',
+    'og view' => '浏览小组',
+    'admin og' => '管理小组',
+    'admin og status' => '审核小组',
+    'admin og node' => '管理全部话题',
+    'admin og node fields' => '管理话题字段',
+    'admin og settings' => '管理小组设置',
+  );
+}
+
+/**
+ * @Implement of hook_system_admin_menus()
+ */
+function og_system_admin_menus() {
+  return array(array(
+    array('小组列表', 'admin/og'),
+    array('小组审核', 'admin/og/status'),
+    array('话题管理', 'admin/og/node'),
+    array('话题字段', 'admin/og/node/fields'),
+    array('小组设置', 'admin/og/settings'),
+  ), '小组管理');
+}
+
+/**
+ * 加载小组信息
+ * @param (string) $alias
+ *  小组别名或 id
+ * @param (bool) $load
+ *  是否执行 hook_og_load()
+ */
+function og_load($alias, $load = true) {
+  static $data;
+  
+  if (isset($data[$alias])) {
+    return $data[$alias];
+  }
+  
+  $query = 'SELECT o.*, u.name FROM {og} o INNER JOIN {users} u ON o.uid = u.uid WHERE ';
+
+  $query .= !is_numeric($alias) ? 'alias = ?' : 'oid = ?';
+
+  if ($data[$alias] = db_query($query, array($alias), array('return' => 'one'))) {
+    if ($data[$alias]->data) $data[$alias]->data = unserialize($data[$alias]->data);
+    $data[$alias]->path = 'group/'.$data[$alias]->alias;
+
+    // 小组的默认字段，可以用 menu、tab 等
+    if (!empty($data[$alias]->field_id)) {
+      $data[$alias]->default_field = field_get_cache_term_id($data[$alias]->field_id);
+    }
+    
+    /**
+     * 数据库中 node_access、comment_access 分别对应话题和评论权限
+     * 权限存储格式类似 linux，如：121，012 
+     * 用户分为三种类型：游客、组内成员、其它登录用户
+     * 权限数字 个位对应游客，十位对应其它登录用户，百位对应组成员
+     * 数字对应：1 表示无任何权限，2 表示可浏览，3 表示可浏览和发布
+     */
+    $data[$alias]->access = array('node' => array(), 'comment' => array());
+
+    if (!empty($data[$alias]->node_access)) {
+      $data[$alias]->access['node']['og_user'] = $data[$alias]->node_access{0};
+      $data[$alias]->access['node']['user'] = $data[$alias]->node_access{1};
+      $data[$alias]->access['node']['anonymous'] = $data[$alias]->node_access{2};
+    } else {
+      $data[$alias]->access = array('node' => array('anonymous' => 0, 'user' => 0, 'og_user' => 0));
+    }
+
+    if (!empty($data[$alias]->comment_access)) {
+      $data[$alias]->access['comment']['og_user'] = $data[$alias]->comment_access{0};
+      $data[$alias]->access['comment']['user'] = $data[$alias]->comment_access{1};
+      $data[$alias]->access['comment']['anonymous'] = $data[$alias]->comment_access{2};
+    } else {
+      $data[$alias]->access = array('comment' => array('anonymous' => 0, 'user' => 0, 'og_user' => 0));
+    }
+
+
+    // 小组字段
+    // field_get_node_load('og', 'group', $data[$alias]);
+
+    if ($data[$alias]->type == 1) {
+      $data[$alias]->type_message = t('og', '公开，可直接加入');
+    } else if ($data[$alias]->type == 2) {
+      $data[$alias]->type_message = t('og', '公开，加入需审核');
+    } else if ($data[$alias]->type == 3) {
+      $data[$alias]->type_message = t('og', '公开，加入需邀请');
+    } else if ($data[$alias]->type == 0) {
+      $data[$alias]->type_message = t('og', '秘密，成员可浏览，加入需邀请');
+    }
+    
+    if ($data[$alias]->status == 1) {
+      $data[$alias]->status_message = t('og', '正常');
+    } else if ($data[$alias]->status == 0) {
+      $data[$alias]->status_message = t('og', '待审核');
+    } else if ($data[$alias]->status == -1) {
+      $data[$alias]->status_message = t('og', '已屏蔽');
+    }
+    
+    // 当前用户是小组管理员
+    if ($data[$alias]->uid == $GLOBALS['user']->uid) {
+      $data[$alias]->is_group_admin = true;
+    } else {
+      $data[$alias]->is_group_admin = false;
+    }
+    
+    if ($load) {
+      module_alter_all('og_load', $data[$alias]);
+    }  
+   
+  } else {
+    $data[$alias] = false;
+  }
+  return $data[$alias];
+}
+
+/**
+ * 验证创建小组的权限
+ * @param (object) $ac
+ *  用户对象，不指定则为当前用户
+ */
+function og_is_add($ac = NULL) {
+  if (!isset($ac)) $ac = $GLOBALS['user'];
+  
+  if ($ac->uid == 1) return true;
+  
+  if (user_access('og add', $ac)) {
+    if ($limit = var_get_key('og', 'role_limit')) {
+      $num = 0;
+      foreach ($limit as $rid => $value) {
+        if ($ac->roles[$rid] && $value > $num) {
+          $num = $value;
+        }
+      }
+      if ($num) {
+        return $num > db_query('SELECT COUNT(oid) FROM {og} WHERE uid = ?',
+          array($ac->uid), array('return' => 'column'));
+      }
+      
+      return true;
+    }
+  }
+}
+
+/**
+ * 加入小组权限
+ * @param (object) $og
+ */
+function og_access_join($og) {
+  /**
+   * type 状态：
+   *  0：不公开，只有邀请才能加入，1、公开，直接加入，2、公开，审核加入，3、公开，邀请加入
+   * status 状态：
+   *  -1、管理员屏蔽，0：待审核，1、正常
+   */
+  
+  return $og->status == 1 && ($og->type == 1 || $og->type == 2) 
+  && !og_is_group_user($GLOBALS['user']->uid, $og) && !module_invoke_all('og_access_join', $og);
+}
+
+/**
+ * 退出小组权限验证
+ * @param (object) $og
+ */
+function og_access_logout($og) {
+  return $og->uid != $GLOBALS['user']->uid && $og->status == 1 
+  && og_is_group_user($GLOBALS['user']->uid, $og) && !module_invoke_all('og_access_logout', $og);
+}
+
+/**
+ * 小组设置修改权限
+ * @param (object) $og
+ */
+function og_access_update($og) {
+  return $og->status == 1 && $og->uid == $GLOBALS['user']->uid;
+}
+
+/**
+ * 小组解散权限，即删除，同时将删除组内所有内容
+ * @param (object) $og
+ */
+function og_access_delete($og) {
+  return $og->status == 1 && $og->uid == $GLOBALS['user']->uid && var_get_key('og', 'delete', 0);
+}
+
+/**
+ * 小组浏览权限检查
+ * @param (object) $og
+ *  小组对象
+ */
+function og_access_view($og) {
+  
+  // 具有群组管理权限可访问
+  if (user_access('admin og')) {
+    return true;
+  }
+  
+  if ($og->status == 1) {
+    // 群组状态正常
+    
+    if ($og->type > 0) {
+      // 公开小组，所有人可访问
+      return true;
+    } else if ($GLOBALS['user']->uid) {
+      // 秘密小组，只有组内成员可访问
+      return og_is_group_user($GLOBALS['user']->uid, $og);
+    }
+    
+  } else if ($og->status == 0 && $og->uid == $GLOBALS['user']->uid) {
+    // 群组待审核，群主可访问
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * 加载节点信息
+ * @param (string) $nid
+ *  节点 id
+ * @param (bool) $load
+ *  是否执行 hook_og_node_load()
+ */
+function og_node_load($nid, $load = true) {
+  static $data;
+  if (!isset($data[$nid])) {
+    if ($node = db_query('SELECT n.*, u.name FROM {og_node} n INNER JOIN {users} u
+    ON n.uid = u.uid WHERE n.nid = ?', array($nid), array('return' => 'one'))) {
+      $node->data = $node->data ? unserialize($node->data) : array();
+      $node->og = og_load($node->oid);
+
+      if ($load) {
+
+        // 自定义话题字段
+        field_get_node_load('og', 'ext_node_' . $node->oid, $node);
+        // 话题通用字段
+        field_get_node_load('og', 'default', $node);
+
+        module_alter_all('og_node_load', $node);
+      }
+      
+      $data[$nid] = $node;
+    } else {
+      $data[$nid] = false;
+    }
+  }
+  return $data[$nid];
+}
+
+/**
+ * 小组节点浏览权限检查
+ * @param (object) $node
+ *  节点对象
+ */
+function og_access_node_view($node) {
+  return $node->node_status > 0 && og_access_view($node->og);
+}
+
+/**
+ * 验证当有用户是否有当前小组内容创建权限
+ * @param (object) $og
+ *  小组对象
+ * @param (string) $type
+ *  内容类型，由模块自定义
+ */
+function og_access_node_create($og, $type, $goto = NULL) {
+  if (!$og->oid) return false;
+  
+  if ($og->status > 0) {
+    $og->og = new stdClass();
+    $og->node_type = $type;
+    $og->og = $og;
+    
+    return og_is_group_user($GLOBALS['user']->uid, $og);
+  } else if ($goto && og_is_group_user($GLOBALS['user']->uid, $og)) {
+    if ($og->status == -1) {
+      dd_set_message(t('og', '小组被屏蔽，暂时无法发言'));
+    } else if ($og->status == 0) {
+      dd_set_message(t('og', '小组尚未通过审核，暂时无法发言'));
+    }
+    dd_goto('group/'.$og->alias);
+  }
+  
+  return false;
+}
+
+/**
+ * 验证编辑文章权限
+ * @param (object) $node
+ */
+function og_access_node_update($node) {
+  /**
+   * 小组管理员不能编辑成员的文章
+   * 已被小组管理员放到回收站的文章作者不能编辑
+   */
+  return $node->node_status > 0 && $GLOBALS['user']->uid && $node->uid == $GLOBALS['user']->uid;
+}
+
+/**
+ * 验证删除文章权限
+ * @param (object) $node
+ */
+function og_access_node_delete($node) {
+  /**
+   * 小组管理员不能删除文章
+   */
+  return $GLOBALS['user']->uid == 1;
+}
+
+/**
+ * 验证文章状态更改权限
+ * @param (object) $node
+ */
+function og_access_node_status($node) {
+  /**
+   * 小组管理员可以修改文章状态，即：放入回收站、通过审核、禁止回复
+   */
+  return $GLOBALS['user']->uid == 1 || ($GLOBALS['user']->uid && $GLOBALS['user']->uid == $node->og->uid);
+}
+
+/**
+ * 检查当前用户是否为小组成员
+ * @param (int) $uid
+ *  用户 id
+ * @param (object) $og
+ *  小组对象
+ */
+function og_is_group_user($uid, $og) {
+  static $data;
+  if ($uid) {
+    if (!isset($data[$og->oid][$uid])) {
+      if (isset($og->uid) && $og->uid == $uid) {
+        $data[$og->oid][$uid] = true;
+      } else if (db_query('SELECT id FROM {og_user} WHERE oid = ? AND uid = ? AND user_status != -1',
+      array($og->oid, $uid), array('return' => 'column'))) {
+        $data[$og->oid][$uid] = true;
+      } else {
+        $data[$og->oid][$uid] = false;
+      }
+    }
+    return $data[$og->oid][$uid];
+  } else {
+    return false;
+  }
+}
+/**
+ * 小组首页
+ * @param (object) $og
+ *  小组对象
+ */
+function og_view($og, $op = 'page') {
+  global $user;
+
+  $args = arg();
+
+  if ($op == 'page' && $args[0] == 'group' && $args[1] != $og->alias) {
+    // 检查用户是否通过小组 id 访问，如果是，则跳转到别名
+    dd_goto('group/' . $og->alias);
+  }
+
+  $og->op = $op;
+  
+  if ($og->logo) {
+    $og->logo = f(image_get_thumb($og->oid, $og->logo, '85x85'));
+  } else {
+    $og->logo = f(var_get_key('og', 'default_logo', 'misc/images/logo.png'));
+  }
+  
+  $og->data['des'] = nl2br(strip_tags($og->data['des'], '<a>'));
+  
+  if (og_is_group_user($user->uid, $og)) {
+    $og->links['addtopic'] = url($og->path. '/add/topic');
+    if ($og->uid != $user->uid) {
+      $og->links['logout'] = url($og->path. '/logout');
+    } else {
+      $og->links['admin'] = url($og->path. '/settings');
+    }
+  } else if ($user->uid) {
+    $og->links['join'] = url($og->path. '/join');
+  }
+  
+  $og->url = url($og->path);
+  
+  if ($op == 'page') {
+    $header = array(
+      t('og', '标题'),
+      array('data' => t('og', '作者'), 'field' => 'n.uid'),
+      array('data' => t('og', '创建时间'), 'field' => 'n.created'),
+      array('data' => t('og', '回应'), 'field' => 'n.comment_count'),
+      array('data' => t('og', '更新时间'), 'field' => 'n.updated', 'sort' => 'desc'),
+    );
+
+
+    if ($user->uid > 0) {
+      $breadcrumb = array(
+        l(t('og', '小组'), 'group/all'), l(t('og', '我的小组'), $user->path.'/group')
+      );
+    } else {
+      $breadcrumb = array(l(t('og', '小组'), 'group/all'));
+    }
+
+    if ($args[2] == 'term' && is_numeric($args[3])) {
+      $og->term = field_term_load($args[3]);
+      
+      if (empty($og->term->tid) || ($og->term->field->type != 'ext_node_' . $og->oid && $og->term->field->type != 'default')) {
+        dd_get_access();
+      }
+
+      // 分类不属于默认字段，向默认字段添加一个单元
+      if ($og->term->field_id != $og->field_id) {
+        $og->default_field[] = $og->term;
+      }
+
+      dd_set_title(array(
+        $og->term->name,
+        t('og', $og->og_name)
+      ));
+
+      $breadcrumb[] = l($og->og_name, $og->path);
+      $breadcrumb[] = $og->term->name;
+
+    } else {
+      dd_set_title(array(t('og', $og->og_name)));
+      $breadcrumb[] = $og->og_name;
+    }
+
+    dd_set_breadcrumb($breadcrumb);
+
+    if (!empty($og->node_count)) {
+
+      $sql_args = array();
+
+      if (!empty($og->term)) {
+
+        $query = 'SELECT DISTINCT(ftn.nid), n.data, n.top, n.title, n.nid, n.uid, n.created, 
+        n.comment_count, n.updated, u.name FROM {og_node} n INNER JOIN {users} u ON n.uid = u.uid
+        INNER JOIN {fields_term_node} ftn ON n.nid = ftn.nid WHERE ftn.tid = ? AND n.oid = ? AND n.node_status > 0';     
+        
+        $sql_args = array($og->term->tid, $og->oid);
+
+      } else {
+        $query = 'SELECT n.data, n.top, n.title, n.nid, n.uid, n.created, 
+        n.comment_count, n.updated, u.name FROM {og_node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.oid = ? 
+        AND n.node_status > 0'; 
+        $sql_args = array($og->oid);
+      }
+
+      if ($fetch = pager_query($query . table_sql($header, ($_GET['sort'] ? '' : 'n.top DESC,')),
+      20, 0, NULL, $sql_args)) {
+        $og->nodes = og_node_list_default($fetch, $header, 0, 1, 1, 'og_front_' . $og->oid);
+        $og->pager = pager_view();
+      }
+
+    }
+    
+    dd_set_meta(array(
+      'description' => mb_substr(str_replace(array("\n", "\t", "\r", ' ', '　'), '', strip_tags($og->data['des'])), 0, 250) .'…'
+    ));
+     
+    if ($og->is_group_admin && $og->data['user_wait_status']) {
+      dd_set_message(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
+      array('%a' => $og->data['user_wait_status'], '!url' => url($og->path.'/settings/user', array('query' => 'status=0')))));
+    }
+    
+    $og->feed_og_url = f('custom.php?module=og&op=feed&type=node&bootstrap=full&oid='.$og->oid);
+    $og->feed_comment_url = f('custom.php?module=og&op=feed&type=comment&bootstrap=full&oid='.$og->oid);
+    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.t('og', '订阅小组最新话题').'" href="'.$og->feed_og_url.'" />');
+    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.t('og', '订阅小组最新评论').'" href="'.$og->feed_comment_url.'" />');
+    
+    dd_add_css(dd_get_path('module', 'og').'/og.css');
+    
+  }
+  
+  module_alter_all('og_view', $og, $op);
+ 
+  return theme('og', $og); 
+}
+
+/**
+ * 小组创建或更新
+ * @param (object) $og
+ *  小组对象
+ * @param (bool) $validate
+ *  是否需要验证
+ */
+function og_save(&$og, $validate = true, &$error = NULL) {
+  if ($validate && $error = og_validate($og)) {
+    return false;
+  }
+  
+  if (!isset($og->logo)) $og->logo = '';
+
+  if ($og->oid) {
+    $og->is_op = 'update';
+    
+    if (db_write_record('og', $og, array('oid'))) {
+      
+      $og->path = 'group/'.$og->alias;
+      module_invoke_all('og_save', $og);
+      
+      return $og;
+    }
+  } else {
+    if (!isset($og->ext_id)) $og->ext_id = 0;
+    if (!isset($og->ext_type)) $og->ext_type = '';
+    
+    if (!isset($og->alias)) {
+      $og->alias = $_SERVER['REQUEST_TIME'];
+      $alias = false;
+    } else {
+      $alias = true;
+    }
+    
+    $og->is_op = 'insert';
+    $og->created = $_SERVER['REQUEST_TIME'];
+
+    if (db_write_record('og', $og)) {
+      $og->alias = $og->oid;
+      
+      if (empty($alias)) {
+        db_exec('UPDATE {og} SET alias = ? WHERE oid = ?', array($og->oid, $og->oid));
+      }
+      
+      og_set_user($og->oid, $og->uid, 1, -1); // 写入管理员用户
+      
+      $og->path = 'group/'.$og->alias;
+      
+      module_invoke_all('og_save', $og);
+      
+      return $og;
+    }
+  }
+}
+
+/**
+ * 小组验证
+ * @param (object) $og
+ *  小组对象
+ */
+function og_validate(&$og) {
+  $t = NULL; 
+
+  // 将表单提交的权限数据转换为可存储的权限格式
+  if (!empty($og->_node_access) && is_array($og->_node_access)) {
+    $og->node_access = $og->comment_access = '';
+    foreach (og_get_access_user_type() as $key => $title) {
+      $og->node_access .= $og->_node_access[$key];
+      $og->comment_access .= $og->_comment_access[$key];
+    }
+  }
+
+  if (!empty($og->data['alias_name']) && is_string($og->data['alias_name'])) {
+    $og->data['alias_name'] = dd_line_to_array($og->data['alias_name'], 1);
+  }
+
+  $max = var_get_key('og', 'name_max', 128) < 128 ? var_get_key('og', 'name_max', 128) : 128;
+
+  if (mb_strlen($og->og_name) > $max) {
+    $t['og_name']['#error'][] = t('og', '小组名称过长');
+  } else if (mb_strlen($og->data['des']) > var_get_key('og', 'des_max', 1000)) {
+    $t['data']['des']['#error'][] = t('og', '小组介绍过长');
+  } else if ($og->oid) {
+    if (db_query('SELECT oid FROM {og} WHERE og_name = ? AND oid != ?', array($og->og_name, $og->oid),
+    array('return' => 'column'))) {
+      $t['name']['#error'][] = t('og', '小组名称已经存在');
+    } else if ($og->alias && $og->alias != $og->oid) {
+      if (db_query('SELECT oid FROM {og} WHERE alias = ? AND oid != ?', array($og->alias, $og->oid),
+    array('return' => 'column'))) {
+        $t['alias']['#error'][] = t('og', '路径已经存在');
+      }
+    }
+  } else if (db_query('SELECT oid FROM {og} WHERE og_name = ?', array($og->og_name), array('return' => 'column'))) {
+    $t['name']['#error'][] = t('og', '小组名称已经存在');
+  } else if ($og->alias && $og->alias != $og->oid && 
+  db_query('SELECT oid FROM {og} WHERE alias = ?', array($og->alias), array('return' => 'column'))) {
+    $t['alias']['#error'][] = t('og', '路径已经存在');
+  } else {
+    $t = module_invoke_all('og_validate', $og);
+  }
+
+  return $t;
+}
+
+/**
+ * 节点创建或更新
+ * @param (object) $node
+ *  节点对象
+ * @param (bool) $validate
+ *  是否需要验证
+ * @param (array) &$error
+ *  若验证引用回传错误信息
+ */
+function og_node_save(&$node, $validate = true, &$error = NULL) {
+
+  if ($validate && $error = og_node_validate($node)) {
+    return false;
+  }
+  
+  if (empty($node->updated)) $node->updated = $_SERVER['REQUEST_TIME'];
+  
+  if (!isset($node->foramt)) $node->foramt = 0;
+
+  if (!empty($node->get_images)) {
+    $rand = md5(uniqid(mt_rand(), true));
+    $node->body = file_down_image($node->body, array(
+      'savepath' => 'node/' . date('Y') . '/' . date('m'),
+      'ext_type' => $rand,
+      'status' => -1,
+      'size' => '800x600',
+      'watermark' => var_get_key('file_image_watermark', 'default', 0)
+    ));
+  }
+ 
+  $node->og = og_load($node->oid);
+  
+  if (!empty($node->nid)) {
+    $node->is_op = 'update';
+    if (db_write_record('og_node', $node, array('nid'))) {
+      field_get_node_save('og', 'ext_node_' . $node->oid, $node);
+      field_get_node_save('og', 'default', $node);
+
+      module_invoke_all('og_node_save', $node);
+      
+    }
+  } else {
+    if (empty($node->created)) $node->created = $node->updated;
+    $node->is_op = 'insert';
+    if (!isset($node->node_status )) $node->node_status = 1;
+    
+    db_write_record('og_node', $node);
+    
+    if ($node->nid) {
+      og_set_node_count($node->oid); // 统计节点数量
+      
+      field_get_node_save('og', 'ext_node_' . $node->oid, $node);
+      field_get_node_save('og', 'default', $node);
+
+      module_invoke_all('og_node_save', $node);
+    }
+  }
+
+  // 将图片与小组关联
+  if (!empty($node->get_images)) {
+    db_exec('UPDATE {files} SET ext_type = ?, ext_id = ?, ext_id2 = ?, status = 1 
+    WHERE ext_type = ?', array('og_node', $node->nid, $node->oid, $rand));
+  }
+
+  // 发布到微博
+  if (module_exists('weibo') && !empty($node->weibo) && !empty($node->weibo['check']) && !empty($node->weibo['aid'])) {
+    $url = url('group/node/'. $node->nid, array('absolute' => true));
+
+    $api = new weibo($node->uid, $node->weibo['aid']);
+    
+    $text = $node->weibo['text'] ? $node->weibo['text'] : ('#' . $node->og->og_name . '#：' . $node->title);
+
+    if ($api->set_tweet($text, $url, $node->weibo['file'])) {
+      dd_set_message(t('weibo', '已成功推送到新浪微博'));
+    } else {
+      dd_set_message(t('weibo', '推送到新浪微博失败'), 'error');
+    }
+  }
+
+  return $node;
+}
+
+/**
+ * 节点验证
+ * @param (object) $node
+ *  节点对象
+ */
+function og_node_validate(&$node) {
+  $t = NULL; 
+  if (!$node->oid) {
+    $t['title']['#error'][] = t('og', '小组不存在');
+  } else if (mb_strlen($node->title) > 128) {
+    $t['title']['#error'][] = t('og', '名称过长');
+  } else if (mb_strlen($node->body) > 50000) {
+    $t['body']['#error'][] = t('og', '内容过长');
+  } else if (!$t = field_get_node_validate('og', 'ext_node_' . $node->oid, $node)) {
+    if (!$t = module_invoke_all('og_node_validate', $node)) {
+      $t = field_get_node_validate('og', 'default', $node);
+    }
+  }
+  return $t;
+}
+
+
+/**
+ * 选取返回字段，主要用于话题和评论表单，选择操作成功后返回的页面
+ * @param string $default 
+ *  默认值为当前话题
+ * @access public
+ * @return array
+ */
+function og_get_redirect_field($default = 'node') {
+  return array(
+    '#type' => 'radio',
+    '#title' => t('og', '返回'),
+    '#default_value' => $default,
+    '#options' => array(
+      'node' => t('og', '当前话题'),
+      'group' => t('og', '当前小组'),
+      'mygroup' => t('og', '我的小组'),
+      'front' => t('og', '网站首页')
+    ),
+    '#description' => t('og', '操作成功后，返回的页面')
+  );
+}
+
+/**
+ * 根据选项，解析返回路径
+ * @param string $value
+ *  选项值
+ * @param object $obj
+ *  当前话题或评论对象，须包含 nid、oid、uid
+ * @access public
+ * @return string
+ */
+function og_get_redirect_path($value, $obj) {
+  switch ($value) {
+    case 'group':
+      $og = og_load($obj->oid);
+      $redirect = 'group/' . $og->alias;
+    break;
+    case 'mygroup':
+      $redirect = 'user/' . $obj->uid . '/group';
+    break;
+    case 'front':
+      $redirect = '';
+    break;
+    default:
+      $redirect = 'group/node/' . $obj->nid;
+  }
+  
+  return url($redirect);
+}
+
+/**
+ * 删除节点
+ * @param (object) $node
+ */
+function og_node_delete($node) {
+  if (db_exec('UPDATE {og_node} SET node_status = 0 WHERE nid = ?', array($node->nid))) {
+    og_set_node_count($node->oid);
+    
+    // 直接删除所有评论，不触发评论相关事件
+    db_exec('DELETE FROM {comment} WHERE ext_type = ? AND ext_id = ?', array('og', $node->nid));
+    
+    module_invoke_all('og_node_delete', $node);
+    
+    dd_log('og', t('og', '删除文章'), $node->oid);
+    dd_set_message(t('og', '删除成功'));
+    dd_goto('group/'.$node->og->alias);
+  }
+}
+
+/**
+ * @Implement of hook_comment_info()
+ */
+function og_comment_info() {
+  /**
+   * og 评论使用 comment 模块。
+   * 定义评论类型：
+   *  ext_id => 节点 id
+   *  ext_id2 => 群组 id
+   */
+  return array(
+    'og' => array(
+      'name' => '回复',
+      'default_status' => 1,
+      'editor_text' => var_get_key('og', 'comment_editor', 1) == 1,
+      'editor_html' => var_get_key('og', 'comment_editor', 1) == 2,
+      'from_update_call' => 'og_get_comment_form_update',
+      'from_insert_call' => 'og_get_comment_form_insert',
+    )
+  );
+}
+
+/**
+ * @Implement of hook_comment_save()
+ */
+function og_comment_save($comment) {
+  if ($comment->ext_type == 'og') {
+    if ($comment->status == 0 || !$comment->ext_id) {
+      return; 
+    }
+    
+    $node = og_node_load($comment->ext_id);
+
+    if ($comment->op == 'insert') {
+      // $comment->ext_id 即节点 id
+      if ($count = og_set_comment_count($comment->ext_id)) {
+        
+        // 最后更新用户昵称
+        $node->data['last_username'] = $comment->name;
+        // 最后一条评论 id
+        $node->data['last_cid'] = $comment->cid;
+         
+        db_exec('UPDATE {og_node} SET updated = ?, data = ? WHERE nid = ?',
+        array($_SERVER['REQUEST_TIME'], serialize($node->data), $comment->ext_id));
+        
+      }
+    } else {
+      $count = $comment->comment_count ? $comment->comment_count : og_set_comment_count($comment->ext_id);
+    }
+
+    if ($comment->redirect == 'node') {
+      if ($count > var_get('og_comment_page_count', 20)) {
+        $query = 'page='.floor($count/var_get('og_comment_page_count', 20));
+      } else {
+        $query = NULL;
+      }
+      $comment->redirect = url('group/node/'.$node->nid, 
+      array('query' => $query, 'fragment' => 'comment_og_'.$comment->cid));
+    } else {
+      $comment->redirect = og_get_redirect_path($comment->redirect, $node);
+    }
+    
+  }
+}
+
+/**
+ * @Implement of hook_comment_goto()
+ */
+function og_comment_goto($comment) {
+  if ($comment->ext_type == 'og') {
+    return 'group/node/'.$comment->ext_id;
+  }
+}
+
+/**
+ * @Implement of hook_comment_delete()
+ */
+function og_comment_delete($comment) {
+  if ($comment->ext_type == 'og') {
+    og_set_comment_count($comment->ext_id);
+    $comment->redirect = 'group/node/'.$comment->ext_id;
+    dd_log('og', t('og', '删除回复，ID：!id', array('!id' => $comment->cid)), $comment->ext_id2, 'group/node/'.$comment->ext_id, 0, $GLOBALS['user']->uid);
+  }
+}
+
+/**
+ * @Implement of hook_comment_is_delete()
+ */
+function og_comment_is_delete($comment) {
+  if ($comment->ext_type == 'og') {
+    /**
+     * 小组管理员可以删除评论
+     */
+    if ($node = og_node_load($comment->ext_id)) {
+      $comment->is_delete = og_access_node_view($node) && $GLOBALS['user']->uid == $node->og->uid;
+    }
+  }
+}
+
+/**
+ * @Implement of hook_comment_is_update()
+ * 
+ * 评论编辑权限
+ * @param (object) $comment
+ */
+function og_comment_is_update($comment) {
+  if ($comment->ext_type == 'og') {
+    /**
+     * 回收站的节点所属评论无法编辑
+     * 只能编辑自己的正常评论
+     */
+    if ($node = og_node_load($comment->ext_id)) {
+      $comment->is_update = og_access_node_view($node) && $comment->status == 1 
+        && $GLOBALS['user']->uid == $comment->uid;
+    }
+  }
+}
+
+/**
+ * 评论发布权限
+ * @param (object) $comment
+ */
+function og_comment_is_create($comment) {
+  if ($comment->ext_type == 'og' && $comment->ext_id) {
+    
+    /**
+     * 小组成员才能发布评论
+     */
+    if ($node = og_node_load($comment->ext_id)) {
+    
+      $comment->is_create = og_access_node_view($node) && og_is_group_user($GLOBALS['user']->uid, $node->og) 
+        && $node->node_status == 1;
+    }
+  }
+}
+
+/**
+ * 评论编辑表单，回调函数
+ * @param (array) $form
+ * @param (object) $comment
+ */
+function og_get_comment_form_update(&$form, &$comment) {
+  dd_set_tabs(array(l(t('og', '编辑回复'), $_GET['q']), l(t('og', '返回主题'), 'group/node/'.$comment->ext_id)));
+  $form['fields']['redirect'] = og_get_redirect_field();
+}
+
+/**
+ * 评论添加表单，回调函数
+ * @param (array) $form
+ * @param (object) $comment
+ */
+function og_get_comment_form_insert(&$form, &$comment) {
+  $form['fields']['redirect'] = og_get_redirect_field();
+}
+
+/**
+ * 将用户加入小组
+ * @param (int) $oid
+ *  小组 id
+ * @param (int) $uid
+ *  用户 id
+ * @param (int) $user_status
+ *  状态：-1、禁止，0、待审核，1、正常
+ * @param (int) $rid
+ *  角色 id：0：普通成员，-1：管理员
+ * @param (string) $value
+ *  申请消息
+ */
+function og_set_user($oid, $uid, $user_status, $rid, $value = '') {
+  if (!db_exec('UPDATE {og_user} SET rid = ?, user_status = ?, timestamp = ? WHERE uid = ? AND oid = ?',
+  array($rid, $user_status, $_SERVER['REQUEST_TIME'], $uid, $oid))) {
+    db_exec('INSERT INTO {og_user} (oid, uid, rid, user_status, timestamp, value) VALUES (?, ?, ?, ?, ?, ?)',
+    array($oid, $uid, $rid, $user_status, $_SERVER['REQUEST_TIME'], $value));
+    og_set_user_count($oid);
+  }
+}
+
+/**
+ * 小组成员
+ * @param (string) $oid
+ *  小组 id
+ */
+function og_set_user_count($oid) {
+  db_exec('UPDATE {og} SET user_count = (SELECT COUNT(uid) FROM {og_user} WHERE oid = ? AND user_status = 1) 
+  WHERE oid = ?', array($oid, $oid));
+}
+
+/**
+ * 统计小组节点数量
+ * @param (int) $oid
+ *  小组 id
+ */
+function og_set_node_count($oid) {
+  db_exec('UPDATE {og} SET node_count = (SELECT COUNT(nid) FROM {og_node} WHERE oid = ? AND node_status > 0) 
+    WHERE oid = ?', array($oid, $oid));
+}
+
+/**
+ * 统计节点评论数量
+ * @param (int) $nid
+ *  节点 id
+ */
+function og_set_comment_count($nid) {
+  $count = db_query('SELECT COUNT(cid) FROM {comment} WHERE ext_type = ? AND status > 0 AND ext_id = ?',
+  array('og', $nid), array('return' => 'column'));
+  
+  db_exec('UPDATE {og_node} SET comment_count = ? WHERE nid = ?', array($count, $nid));
+  return $count;
+}
+
+/**
+ * 获取小组待审核成员数量
+ * @param (int) $oid
+ *  小组 id
+ */
+function og_set_user_wait($oid) {
+  $count = db_query('SELECT COUNT(id) FROM {og_user} WHERE oid = ? AND user_status = 0',
+  array($oid), array('return' => 'column'));
+  og_set_data($oid, array('user_wait_status', $count));
+}
+
+/**
+ * 写入自定义数据，即 $og->data
+ * 数值以键值形式序列化保存，相同键值将覆盖
+ * @param (int)$oid
+ *  小组 id
+ * @param (array)$value
+ *  需保存的数据，值对格式
+ */
+function og_set_data($oid, $value = array()) {
+  global $user;
+  if ($o = db_query('SELECT oid, data FROM {og} WHERE oid = ?', array($oid), array('return' => 'one'))) {
+    $data = array();
+    if ($o->data) $data = unserialize($o->data);
+    $data = array_merge($data, $value);
+    db_exec('UPDATE {og} SET data = ? WHERE oid = ?', array(serialize($data), $o->oid));
+    return $data;
+  }
+}
+
+/**
+ * @Implement of hook_og_node_info()
+ *  定义小组内容类型
+ */
+function og_og_node_info() {
+  return array(
+    'topic' => array(
+      'title' => t('og', '话题'),
+      'description' => t('og', '描述'),
+      'default_form' => true, // 是否需要基本表单
+    ),
+  );
+}
+
+/**
+ * @Implement of hook_block_view()
+ */
+function og_block_view($theme, $config = object) {
+  
+  if (!user_access('og view')) return false;
+  
+  $nid = 0;
+  
+  if (arg(0) == 'group' && arg(1)) {
+    if (arg(1) == 'node') {
+      if ($node = og_node_load(arg(2))) {
+        $og = $node->og;
+        $nid = $node->nid;
+      }
+    } else {
+      $og = og_load(arg(1));
+    }
+  }
+  
+  switch ($config->delta) {
+    case 'user_avatar':
+      if ($og->oid) {
+        if ($fetch = db_query('SELECT o.uid, u.name FROM {og_user} o INNER JOIN {users} u ON o.uid = u.uid 
+        WHERE o.oid = ? AND o.user_status = 1 ORDER BY o.id DESC',
+        array($og->oid), array('limit' => 10))) {
+          $item = array();
+          foreach ($fetch as $o) {
+            $avatar = user_get_avatar($o->uid, '85x85');
+            
+            $item[] = l(img($avatar, $o->name, $o->name), 'user/'.$o->uid, array('html' => true)) . l($o->name, 'user/'.$o->uid);
+          }
+          
+          $block['content'] = theme('item_list', $item);
+          $block['title'] = $config->title;
+        }
+      }
+    break;
+    case 'new_node':
+      if ($og->oid && $og->node_count) {
+        if ($fetch = db_query('SELECT nid, title FROM {og_node} WHERE oid = ? AND node_status = 1 AND nid != ? 
+        ORDER BY nid DESC', array($og->oid, $nid), array('limit' => 10))) {
+          $item = array();
+          foreach ($fetch as $o) {
+            $item[] = l($o->title, 'group/node/'.$o->nid);
+          }
+          
+          $block['content'] = theme('item_list', $item);
+          $block['title'] = $config->title;
+        }
+      }
+    break;
+    case 'hot_node':
+      if ($og->oid && $og->node_count) {
+        if ($fetch = db_query('SELECT nid, title FROM {og_node} WHERE oid = ? AND node_status = 1 AND nid != ? 
+        ORDER BY comment_count DESC, nid DESC', array($og->oid, $nid), array('limit' => 10))) {
+          $item = array();
+          foreach ($fetch as $o) {
+            $item[] = l($o->title, 'group/node/'.$o->nid);
+          }
+          
+          $block['content'] = theme('item_list', $item);
+          $block['title'] = $config->title;
+        }
+      }
+  }
+  
+  return $block;
+}
+
+/**
+ * @Implement of hook_block_list()
+ */
+function og_block_list($theme) {
+  return array(
+    'user_avatar' => array(
+      'title' => t('og', '小组最新成员'),
+      'description' => t('og', '按加入时间排序'),
+      'region' => 'left',
+      'visibility' => 1,
+      'weight' => -30
+     ),
+    'new_node' => array(
+      'title' => t('og', '小组最新话题'),
+      'description' => t('og', '按发表时间排序'),
+      'region' => 'left',
+      'visibility' => 1,
+      'weight' => -30
+     ),
+    'hot_node' => array(
+      'title' => t('og', '小组热门话题'),
+      'description' => t('og', '按回复数排序'),
+      'region' => 'left',
+      'visibility' => 1,
+      'weight' => -30
+     )
+  );
+}
+
+/**
+ * @Implement of hook_theme()
+ */
+function og_theme() {
+  return array(
+    'og' => array(
+      'tpl' => 'og.tpl.php',
+      'args' => array('og'),
+    ),
+    'og_node' => array(
+      'tpl' => 'node.tpl.php',
+      'args' => array('node'),
+    ),
+  );
+}
+
+/**
+ * @Implement of hook_template_preprocess_x()
+ * 
+ * 小组的可按扩展类型创建模板文件：
+ * og_{$og->ext_type}.tpl.php
+ * og.tpl.php
+ * 
+ */
+function og_template_preprocess_og(&$var, $hook) {
+  if (isset($var['og']) && $var['og']->ext_type) {
+    $var['theme_config']->tpl[] = 'og_'.$var['og']->ext_type.'.tpl.php';
+  } 
+}
+
+/**
+ * @Implement of hook_template_preprocess_x()
+ * 
+ * 话题可按小组的扩展类型创建模板文件：
+ * node_{$node->og->ext_type}.tpl.php
+ * node.tpl.php
+ * 
+ */
+function og_template_preprocess_og_node(&$var, $hook) {
+  if (isset($var['node']->og) && $var['node']->og->ext_type) {
+    $var['theme_config']->tpl[] = 'node_'.$var['node']->og->ext_type.'.tpl.php';
+  } 
+}
+
+/**
+ * 禁止使用的别名，默认长度少于 4 个字符的全部禁止
+ */
+function og_alias_disable() {
+  $arr = array('node', 'add', 'edit', 'admin', 'top', 'comment', 'user', 'hot', 'search');
+  
+  if ($data = var_get_key('og', 'alias_disable')) {
+    if (strpos($data, ' ') !== false) {
+      $arr = array_merge($arr, explode(' ', $data));
+    } else {
+      $arr[] = $data;
+    }
+  }
+  
+  module_alter_all('og_alias_disable', $arr);
+  return $arr;
+}
+
+/**
+ * @Implement of hook_alias_reservation()
+ */
+function og_alias_reservation() {
+  return array('group/');
+}
+
+/**
+ * @Implement of hook_field_call_group()
+ * 
+ * 定义字段组
+ */
+function og_field_call_group($type = NULL) {
+  static $fetch;
+
+  $groups = array(
+    'group' => array(
+      'title' => '小组字段',
+      'description' => '小组字段',
+    ),
+    'default' => array(
+      'title' => '话题通用字段',
+      'description' => '小组话题通用字段',
+    ),
+  );
+
+  // 小组话题自定义字段
+  if (!isset($fetch)) {
+    $fetch = db_query('SELECT oid, og_name FROM {og} WHERE status > 0');
+  }
+
+  if ($fetch) {
+    foreach ($fetch as $o) {
+      $groups['ext_node_' . $o->oid] = array(
+        'title' => $o->og_name . '话题字段',
+        'fieldset' => true,
+        'disable_import' => true,
+        'disable_access' => true
+      );
+    }
+  }
+  
+  return $type ? $groups[$type] : $groups;
+}
+
+/**
+ * @Implement of hook_field_call_save()
+ */
+function og_field_call_form($field, &$form) {
+  // 小组自定义字段
+  if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
+
+    $form['fields']['field_key']['#description'] = t('og', '只能是数字、字母和下划线，必须以 ext_ 开头');
+    if (in_array($field->field_type, array('checkbox', 'select', 'radio', 'selects'))) {
+      $form['fields']['is_menu'] = array(
+        '#title' => '导航',
+        '#default_value' => $field->is_menu,
+        '#type' => 'radio',
+        '#options' => array(0 => t('field', '否'), 1 => t('og', '是')),
+        '#weight' => -10,
+        '#description' => t('og', '将这个类别设为小组导航'),
+      );
+    }
+  }
+}
+
+/**
+ * @Implement of hook_field_call_validate()
+ */
+function og_field_call_validate($field) {
+
+  if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
+    // 给字段索引加上统一前缀
+    if (substr($field->field_key, 0, 4) != 'ext_') {
+      $field->field_key = 'ext_' . $field->field_key;
+    }
+  }
+}
+
+/**
+ * @Implement of hook_field_call_save()
+ */
+function og_field_call_save($field) {
+  if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
+    // 将字段设为或取消小组导航
+    $oid = str_replace('ext_node_', '', $field->type);
+    
+    if (!is_numeric($oid)) return;
+
+    if (!empty($field->is_menu)) {
+      db_exec('UPDATE {og} SET field_id = ? WHERE oid = ?', array($field->field_id, $oid));
+    } else {
+      db_exec('UPDATE {og} SET field_id = 0 WHERE oid = ? AND field_id = ?', array($oid, $field->field_id));
+    }
+
+  }
+}
+
+/**
+ * @Implement of hook_field_call_save()
+ */
+function og_field_call_load($field, &$form) {
+  // 小组自定义字段
+  if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
+    if (in_array($field->field_type, array('checkbox', 'select', 'radio', 'selects'))) {
+      $oid = str_replace('ext_node_', '', $field->type);
+      if (db_query('SELECT field_id FROM {og} WHERE oid = ? AND field_id = ?',
+      array($oid, $field->field_id), array('return' => 'column'))) {
+        $field->is_menu = 1; 
+      } else {
+        $field->is_menu = 0; 
+      }
+    }
+  }
+}
+
+/**
+ * @Implement of hook_site_menu()
+ */
+function og_site_menu(&$menu) {
+  global $user;
+  if ($user->uid) {
+    if (user_access('og view')) {
+      $menu['og'] = array(
+        '#data' => l(t('og', '我的小组'), $user->path.'/group'),
+        '#childrens' => array(
+          l(t('og', '我的话题'), $user->path.'/group/node'),
+          l(t('og', '我的小组'), $user->path.'/group'),
+          l(t('og', '我的评论'), $user->path.'/group/comment'),
+          l(t('og', '所有小组'), 'group/all'),
+          l(t('og', '所有话题'), 'group/node'),
+        ),
+      );
+      if (user_access('og add')) {
+        $menu['og']['#childrens'][] = l(t('og', '创建小组'), 'group/add');
+      }
+    }
+  } else if (user_access('og view')) {
+    $menu['og'] = array(
+      '#data' => l(t('og', '小组'), 'group/all'),
+      '#childrens' => array(
+        l(t('og', '所有小组'), 'group/all'),
+        l(t('og', '所有话题'), 'group/node'),
+      ),
+    );
+  }
+}
+
+/**
+ * @Implement of hook_cron()
+ */
+function og_cron($timestamp) {
+  global $base_url;
+  
+  if ($fetch = db_query('SELECT n.nid, n.title, o.og_name, o.oid, o.alias FROM {og_node} n INNER JOIN {og} o 
+  ON o.oid = n.oid WHERE n.nid > ? AND o.status = 1 AND o.type > 0 AND n.node_status > 0 
+  ORDER BY n.nid ASC', array(var_get('og_cron_pint_start', 0)), array('limit' => 5))) {
+    $id = 0;
+    foreach ($fetch as $o) {
+      
+      $data['params'] = array(
+        $o->og_name, // 小组名称
+        url($o->alias, array('absolute' => true)), // 小组首页
+        url('group/node/'.$o->nid, array('absolute' => true)), // 文章地址
+        url(f('custom.php?module=og&op=feed&type=node&oid='.$o->oid), array('absolute' => true)) // 小组 rss 地址
+      );
+      
+      if (dd_set_ping($data)) {
+        dd_log('og', t('og', '%title ping 成功', array('%title' => $o->title)), 0, 'group/node/'.$o->nid);
+        $id = $o->nid;
+      }
+      
+    }
+    
+    var_set('og_cron_pint_start', $id);
+  }
+}
+
+/**
+ * @Implement of hook_call_custom()
+ */
+function og_call_custom($v) {
+  global $conf, $base_url;
+  
+  switch ($v['op']) {
+    case 'feed':
+      if ($v['bootstrap'] != 'full') exit;
+      require dd_get_path('module', 'og') . '/og.feed.inc';
+      
+      if ($_GET['type'] == 'node') {
+        dd_set_header('Content-Type: application/xml; charset=utf-8');
+          /**
+           * 默认：获取全站最新公开话题
+           * $_GET['oid']：小组 id，获取该小组最新话题
+           */
+          echo og_get_feed_node($_GET['oid']);
+      } else if ($_GET['type'] == 'comment') {
+        dd_set_header('Content-Type: application/xml; charset=utf-8');
+        
+        /**
+         * 默认：获取全部最新评论
+         * $_GET['oid']：小组 id，获取该小组最新评论
+         * $_GET['nid']：话题 id，获取该话题最新评论
+         */
+         echo og_get_feed_comment($_GET['oid'], $_GET['nid']);
+      } else {
+        echo 'byebye';
+      }
+    break;
+  }
+  exit;
+}
+
+/**
+ * 
+ * 输出话题列表
+ * @param (object) $fetch
+ *  PDO:object
+ * @param (array) $header
+ *  table header，如果不传递，则返回数组，传递调用 theme('table') 返回;
+ * @param (bool) $og_name
+ *  是否输出小组名称
+ * @param (bool) $created_time
+ *  是否输出创建时间
+ * @param (string) $suffix_id
+ *  表格 id 后缀
+ */
+function og_node_list_default($fetch, $header = NULL, $og_name = true, $user_name = true, $created_time = true, $suffix_id = '') {
+  foreach ($fetch as $o) {
+    
+    $last_info = '';
+    
+    if ($o->data) {
+      $o->data = unserialize($o->data);
+      if (!empty($o->data['last_username'])) {
+        
+        if ($o->comment_count > var_get('og_comment_page_count', 20)) {
+          $query = 'page='.floor($o->comment_count/var_get('og_comment_page_count', 20));
+        } else {
+          $query = NULL;
+        }
+        $last_info = t('og', '!user 于 !time 前', array( 
+          '!user' => l($o->data['last_username'], 'group/node/'.$o->nid,
+          array('query' => $query, 'fragment' => 'comment_og_'.$o->data['last_cid'])),
+          '!time' => format_interval($_SERVER['REQUEST_TIME']-$o->updated, 3)
+        ));
+      }
+    }
+    
+    if (!$last_info) {
+      $last_info = t('og', '!time 前', array('!time' => format_interval($_SERVER['REQUEST_TIME']-$o->updated, 3)));
+    }
+    
+    if ($o->top) {
+      $top = 'og_node_top';
+    } else {
+      $top = NULL;
+    }
+    
+    $rows = array(
+      array(
+        'data' => l($o->title, 'group/node/'.$o->nid),
+        'class' => 'og_node_list_title'
+      )
+    );
+    
+    if ($og_name) {
+      $rows[] = array(
+        'data' => l($o->og_name, 'group/'.$o->alias),
+        'class' => 'og_node_list_og_name'
+      );
+    }
+    
+    if ($user_name) {
+      $rows[] = array(
+        'data' => theme('username', $o),
+        'class' => 'og_node_list_user'
+      );
+    }
+    
+    if ($created_time) {
+      $rows[] = array(
+        'data' => format_date($o->created, 'custom', 'y/m/d H:i:s'),
+        'class' => 'og_node_list_create'
+      );
+    }
+    
+    $rows[] = array(
+      'data' => l($o->comment_count, 'group/node/'.$o->nid, array('fragment' => 'og_node_comment_wrapper')),
+      'class' => 'og_node_list_comment'
+    );
+    
+    $rows[] = array(
+      'data' => $last_info,
+      'class' => 'og_node_list_update'
+    );
+    
+    $table[] = array('data' => $rows, 'class' => $top);
+    
+  }
+  
+  dd_add_css(dd_get_path('module', 'og').'/og.css');
+  
+  if ($header) {
+    return theme('table', $header, $table, 
+    array('id' => 'og_node_list_table_' . $suffix_id, 'class' => 'og_node_list_table'));
+  } else {
+    return $table;
+  }
+}
+
+/**
+ * 小组内权限类型划分，分为：游客、非成员登录用户、登录用户  
+ * @access public
+ * @return array
+ */
+function og_get_access_user_type() {
+  return array(
+    'anonymous' => t('og', '游客'),
+    'user' => t('og', '非成员'),
+    'og_user' => t('og', '组内成员'),
+  );
+}
+
+

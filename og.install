@@ -1,0 +1,429 @@
+<?php
+// $Id$
+/**
+ * @Implement of hook_update_x()
+ */
+function og_update_12() {
+  /**
+   * 添加 node_access 字段，用于控制非小组成员对文章的权限
+   */
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'size' => 'tiny',
+    'description' => '非成员文章权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
+  );
+  
+  $ret[] = db_add_field('og', 'node_access', $field);
+
+  /**
+   * 添加 comment_access 字段，用于控制非小组成员对评论的权限
+   */
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'size' => 'tiny',
+    'description' => '非成员评论权限：0：不可评论，1、可评论',
+  );
+  
+  $ret[] = db_add_field('og', 'comment_access', $field);
+
+  /**
+   * 添加 field_id 字段，用于设置小组导航
+   */
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => '用做导航的字段 id，关联 fields 表',
+  );
+  
+  $ret[] = db_add_field('og', 'field_id', $field);
+
+  return $ret;
+}
+
+/**
+ * @Implement of hook_update_x()
+ */
+function og_update_11() {
+  $ret = array();
+  /**
+   * 添加 data 字段，用于存储一些附加信息
+   */
+  $field = array(
+    'type' => 'text',
+    'size' => 'medium',
+    'not null' => FALSE,
+    'serialize' => true,
+    'description' => '其它数据',
+  );
+  
+  return db_add_field('og_node', 'data', $field);
+}
+
+/**
+ * @Implement of hook_update_x()
+ */
+function og_update_10() {
+  
+  if ($fetch = db_query('SELECT c.*, n.oid FROM {og_comment} c INNER JOIN {og_node} n ON c.nid = n.nid')) {
+    foreach ($fetch as $o) {
+      if (db_exec('INSERT INTO {comment} (ext_id, ext_id2, ext_type, uid, format, created, status, body, updated) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      array($o->nid, $o->oid, 'og', $o->uid, $o->format, $o->timestamp, $o->comment_status, $o->body, $o->timestamp))) {
+        og_set_comment_count($o->nid);
+      }
+    }
+  }
+  
+  if (db_drop_table('og_comment')) {
+    return array(true);
+  }
+}
+
+/**
+ * @Implement of hook_schema()
+ */
+function og_schema() {
+  $schema['og'] = array(
+    'description' => '群组',
+    'fields' => array(
+      'oid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '创始人 id',
+      ),
+      'alias' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '访问别名',
+      ),
+      'og_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '小组名称',
+      ),
+      'logo' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'logo',
+      ),
+      'user_count' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '成员计数',
+      ),
+      'node_count' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '文章计数',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => '-1、管理员屏蔽，0：待审核，1、正常',
+      ),
+      'type' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => '0：不公开，1、公开，直接加入，2、公开，审核加入，3、公开，邀请加入',
+      ),
+      'node_access' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => '非成员文章权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
+      ),
+      'comment_access' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => '非成员评论权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
+      ),
+      'field_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '用做导航的字段 id，关联 fields 表',
+      ),
+      'ext_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '扩展 id',
+      ),
+      'ext_type' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '扩展类型',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '创建时间',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => '配置数据'
+      ),
+    ),
+    'indexes' => array(
+      'type' => array('type', 'status', 'uid'),
+      'type' => array('type', 'status'),
+      'ext' => array('ext_id', 'ext_type'),
+    ),
+    'unique keys' => array(
+      'alias' => array('alias'),
+      'og_name' => array('og_name'),
+    ),
+    'primary key' => array('oid'),
+  );
+  $schema['og_node'] = array(
+    'description' => '群组节点',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '用户 id',
+      ),
+      'oid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '群组 id',
+      ),
+      'comment_count' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '回复计数',
+      ),
+      'node_status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => '0、回收站，1、正常，2：禁止回复',
+      ),
+      'top' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => '置顶',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '创建时间',
+      ),
+      'format' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '输入格式',
+      ),
+      'updated' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '更新时间',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '标题',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => FALSE,
+        'serialize' => true,
+        'description' => '其它数据',
+      ),
+      'node_type' => array(
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '内容类型',
+      ),
+      'body' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => '正文'
+      ),
+    ),
+    'foreign keys' => array(
+      'oid' => array(
+        'table' => 'og',
+        'field' => 'oid',
+        'update' => 'cascade',
+        'delete' => 'cascade'
+      )
+    ),
+    'indexes' => array(
+      'osue' => array('oid', 'node_status', 'updated', array('node_type', 1)),
+      'osut' => array('oid', 'node_status', 'updated', 'top'),
+      'uid' => array('uid'),
+    ),
+    'primary key' => array('nid'),
+  );
+  
+  $schema['og_user'] = array(
+    'description' => '群组成员',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '用户 id',
+      ),
+      'oid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '群组 id',
+      ),
+      'rid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '-1：管理员，0：普通成员',
+      ),
+      'value' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => '加入请求消息，或其它',
+      ),
+      'user_status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => '-1、禁止，0、待审核，1、正常',
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '加入时间',
+      ),
+    ),
+    'indexes' => array(
+      'osu' => array('oid', 'user_status', 'uid'),
+    ),
+    'foreign keys' => array(
+      'oid' => array(
+        'table' => 'og',
+        'field' => 'oid',
+        'update' => 'cascade',
+        'delete' => 'cascade'
+      ),
+      'uid' => array(
+        'table' => 'users',
+        'field' => 'uid',
+        'update' => 'cascade',
+        'delete' => 'cascade'
+      )
+    ),
+    'unique keys' => array(
+      'oud' => array('oid', 'uid'),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+/**
+ * @Implement of hook_install()
+ */
+function og_install() {
+  $ret = array();
+  $ret = module_install_schema('install', 'og');
+  
+  var_set('og', array('default_logo' => 'misc/images/logo.png'));
+  
+  return $ret;
+}
+
+/**
+ * @Implement of hook_uninstall()
+ */
+function og_uninstall() {
+  $ret = array();
+  $ret = module_install_schema('uninstall', 'og');
+  
+  db_exec('DELETE FROM {variable} WHERE name LIKE ?', array('og%'));
+  var_init();
+  
+  return $ret;
+}
