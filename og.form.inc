@@ -29,8 +29,7 @@ function og_form($og = NULL) {
    
   $form['fields']['oid'] = array(
     '#type' => 'hidden',
-    '#default_value' => $og->oid,
-    '#required' => 1,
+    '#default_value' => !empty($og->oid) ? $og->oid : 0,
     '#constant' => 1,
   );
   
@@ -128,7 +127,6 @@ function og_form($og = NULL) {
   $form['fields']['uid'] = array(
     '#type' => 'hidden',
     '#default_value' => isset($og->uid) ? $og->uid : $user->uid,
-    '#required' => 1,
     '#constant' => 1,
   );
   
