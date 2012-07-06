@@ -41,7 +41,22 @@ function og_form($og = NULL) {
     '#weight' => -100,
     '#description' => t('og', '不超过 %string 个字符', array('%string' => var_get_key('og', 'name_max', 128)))
   );
-  
+
+  if (user_access('admin og stats')) {
+    $form['fields']['status'] = array(
+      '#type' => 'radio',
+      '#weight' => -95,
+      '#title' => t('og', '小组状态'),
+      '#default_value' => $og->status,
+      '#options' => array(
+        0 => t('og', '待审核'),
+        1 => t('og', '通过审核'),
+      ),
+      '#description' => t('og', '只有通过审核的小组才允许访问'),
+      '#required' => 1,
+    );
+  }
+
   $form['fields']['data']['des'] = array(
     '#type' => 'textarea',
     '#title' => t('og', '小组介绍'),

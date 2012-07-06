@@ -203,6 +203,7 @@ function og_schema() {
       'data' => array(
         'type' => 'text',
         'not null' => FALSE,
+        'serialize' => 1,
         'size' => 'big',
         'description' => '配置数据'
       ),
