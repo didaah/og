@@ -51,12 +51,8 @@
 </div>
 
 <?php 
-  if (!empty($og->default_field)) {
-    $tabs = array(l(t('og', '全部话题'), $og->path));
-    foreach ($og->default_field as $term) {
-      $tabs[] = l($term->name, $og->path . '/term/' . $term->tid);
-    }
-    echo theme('item_list', $tabs, NULL, 'ul', array('class' => 'tabs'));
+  if (!empty($og->tabs)) {
+    echo theme('item_list', $og->tabs, NULL, 'ul', array('class' => 'tabs'));
   }
 ?>
 
@@ -72,6 +68,8 @@
   <?php 
     if (!empty($og->nodes)) {
       echo $og->nodes;
+    } else if (!empty($og->content)) {
+      echo $og->content;
     } else {
       echo system_no_content();
     }

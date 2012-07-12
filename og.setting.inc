@@ -22,7 +22,8 @@ function og_update($og) {
       $output = dd_get_form('og_update_logo', $og);
     break;
     case 'edit':
-      $output = dd_get_form('og_update_form', $og);
+      module_include_file('og.form.inc', 'og');
+      $output = dd_get_form('og_form', $og);
     break;
     case 'field':
       $output = _og_settings_field($og);
@@ -69,76 +70,6 @@ function og_update($og) {
   
   dd_add_css(dd_get_path('module', 'og').'/og.css');
   return $output;
-}
-
-/**
- * 编辑小组
- */
-function og_update_form($og) {
-  global $user;
-  
-  $form['fields']['og_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('og', '小组名称'),
-    '#required' => 1,
-    '#weight' => -100,
-    '#default_value' => $og->og_name,
-    '#description' => t('og', '不超过 %string 个字符', array('%string' => var_get_key('og', 'name_max', 128)))
-  );
-  
-  $form['fields']['data']['des'] = array(
-    '#type' => 'textarea',
-    '#title' => t('og', '小组介绍'),
-    '#required' => 1,
-    '#weight' => -90,
-    '#default_value' => $og->data['des'],
-    '#description' => t('og', '不超过 %string 个字符', array('%string' => var_get_key('og', 'des_max', 1000)))
-  );
-  
-  $form['fields']['type'] = array(
-    '#type' => 'radio',
-    '#title' => t('og', '身份验证'),
-    '#default_value' => $og->type,
-    '#options' => array(
-      0 => t('og', '秘密小组'),
-      1 => t('og', '任何人都可以直接加入'),
-      2 => t('og', '只有通过审核才能加入'),
-      3 => t('og', '只有获得邀请才能加入'),
-    ),
-    '#required' => 1,
-    '#description' => t('og', '秘密小组及组内文章，只有成员可见，不会出现在任何公共列表中')
-  );
-  
-  $form['fields']['oid'] = array(
-    '#type' => 'hidden',
-    '#default_value' => $og->oid,
-    '#required' => 1,
-    '#constant' => 1,
-  );
-  
-  $form['settings'] = array(
-    '#values_object' => true,
-    '#validate' => array('og_update_form_validate'),
-    '#ajax_validate' => 1,
-  );
-  
-  $form['fields']['submit'] = array(
-    '#type' => 'submit',
-    '#weight' => 100,
-  );
-  
-  dd_add_css(dd_get_path('module', 'og').'/og.css');
-  return $form;
-}
-
-function og_update_form_validate($form, &$v) {
-  if ($error = og_validate($v['_dida_values'])) {
-    return $error;
-  } else {
-    db_exec('UPDATE {og} SET og_name = ?, type = ? WHERE oid = ?',
-    array($v['_dida_values']->og_name, $v['_dida_values']->type, $v['_dida_values']->oid));
-    og_set_data($v['_dida_values']->oid, $v['_dida_values']->data);
-  }
 }
 
 /**

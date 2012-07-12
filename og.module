@@ -240,9 +240,9 @@ function og_load($alias, $load = true) {
 
   if ($data[$alias] = db_query($query, array($alias), array('return' => 'one'))) {
     if ($data[$alias]->data) $data[$alias]->data = unserialize($data[$alias]->data);
-    $data[$alias]->path = 'group/'.$data[$alias]->alias;
+    $data[$alias]->path = 'group/' . $data[$alias]->alias;
 
-    // 小组的默认字段，可以用 menu、tab 等
+    // 小组话题的默认字段，可用于 menu、tab 等
     if (!empty($data[$alias]->field_id)) {
       $data[$alias]->default_field = field_get_cache_term_id($data[$alias]->field_id);
     }
@@ -257,23 +257,23 @@ function og_load($alias, $load = true) {
     $data[$alias]->access = array('node' => array(), 'comment' => array());
 
     if (!empty($data[$alias]->node_access)) {
-      $data[$alias]->access['node']['og_user'] = $data[$alias]->node_access{0};
+      $data[$alias]->access['node']['og_user'] = $data[$alias]->node_access{2};
       $data[$alias]->access['node']['user'] = $data[$alias]->node_access{1};
-      $data[$alias]->access['node']['anonymous'] = $data[$alias]->node_access{2};
+      $data[$alias]->access['node']['anonymous'] = $data[$alias]->node_access{0};
     } else {
       $data[$alias]->access = array('node' => array('anonymous' => 0, 'user' => 0, 'og_user' => 0));
     }
 
     if (!empty($data[$alias]->comment_access)) {
-      $data[$alias]->access['comment']['og_user'] = $data[$alias]->comment_access{0};
+      $data[$alias]->access['comment']['og_user'] = $data[$alias]->comment_access{2};
       $data[$alias]->access['comment']['user'] = $data[$alias]->comment_access{1};
-      $data[$alias]->access['comment']['anonymous'] = $data[$alias]->comment_access{2};
+      $data[$alias]->access['comment']['anonymous'] = $data[$alias]->comment_access{0};
     } else {
       $data[$alias]->access = array('comment' => array('anonymous' => 0, 'user' => 0, 'og_user' => 0));
     }
 
 
-    // 小组字段
+    // @TODO 小组字段，暂未启用
     // field_get_node_load('og', 'group', $data[$alias]);
 
     if ($data[$alias]->type == 1) {
@@ -540,10 +540,12 @@ function og_is_group_user($uid, $og) {
     return false;
   }
 }
+
 /**
  * 小组首页
- * @param (object) $og
+ * @param object $og
  *  小组对象
+ * @return string
  */
 function og_view($og, $op = 'page') {
   global $user;
@@ -556,26 +558,40 @@ function og_view($og, $op = 'page') {
   }
 
   $og->op = $op;
-  
+
+  // 小组 logo 
   if ($og->logo) {
     $og->logo = f(image_get_thumb($og->oid, $og->logo, '85x85'));
   } else {
     $og->logo = f(var_get_key('og', 'default_logo', 'misc/images/logo.png'));
   }
-  
+
+  // @TODO 小组描述，只保留 a 链接。需增加功能：管理员可设置允许哪些标签
   $og->data['des'] = nl2br(strip_tags($og->data['des'], '<a>'));
-  
+
   if (og_is_group_user($user->uid, $og)) {
-    $og->links['addtopic'] = url($og->path. '/add/topic');
+    // 当前用户若为组内成员，可见的操作链接 
+    $og->links['addtopic'] = url($og->path . '/add/topic'); // 添加话题
     if ($og->uid != $user->uid) {
-      $og->links['logout'] = url($og->path. '/logout');
+      $og->links['logout'] = url($og->path . '/logout'); // 退出小组
     } else {
-      $og->links['admin'] = url($og->path. '/settings');
+      $og->links['admin'] = url($og->path . '/settings'); // 若为创建人，管理链接
     }
   } else if ($user->uid) {
-    $og->links['join'] = url($og->path. '/join');
+    $og->links['join'] = url($og->path . '/join'); // 非成员，加入链接
   }
-  
+
+  // 导航
+  $og->tabs = array();
+
+  // 读取设置为默认导航的字段
+  if (!empty($og->default_field)) {
+    $og->tabs = array(l(t('og', '全部话题'), $og->path));
+    foreach ($og->default_field as $term) {
+      $og->tabs['_term_' . $term->tid] = l($term->name, $og->path . '/term/' . $term->tid);
+    }
+  } 
+
   $og->url = url($og->path);
   
   if ($op == 'page') {
@@ -590,7 +606,7 @@ function og_view($og, $op = 'page') {
 
     if ($user->uid > 0) {
       $breadcrumb = array(
-        l(t('og', '小组'), 'group/all'), l(t('og', '我的小组'), $user->path.'/group')
+        l(t('og', '小组'), 'group/all'), l(t('og', '我的小组'), $user->path . '/group')
       );
     } else {
       $breadcrumb = array(l(t('og', '小组'), 'group/all'));
@@ -661,11 +677,13 @@ function og_view($og, $op = 'page') {
     
     $og->feed_og_url = f('custom.php?module=og&op=feed&type=node&bootstrap=full&oid='.$og->oid);
     $og->feed_comment_url = f('custom.php?module=og&op=feed&type=comment&bootstrap=full&oid='.$og->oid);
-    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.t('og', '订阅小组最新话题').'" href="'.$og->feed_og_url.'" />');
-    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.t('og', '订阅小组最新评论').'" href="'.$og->feed_comment_url.'" />');
+    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="' . t('og', '订阅小组最新话题') . '" href="'.$og->feed_og_url . '" />');
+    dd_set_html_head('<link rel="alternate" type="application/rss+xml" title="' . t('og', '订阅小组最新评论') . '" href="'.$og->feed_comment_url . '" />');
     
-    dd_add_css(dd_get_path('module', 'og').'/og.css');
+    dd_add_css(dd_get_path('module', 'og') . '/og.css');
     
+  } else if ($og->op == 'user') {
+    $og->tabs['user'] = l(t('og', '小组成员'), $og->path . '/user');
   }
   
   module_alter_all('og_view', $og, $op);
@@ -687,12 +705,20 @@ function og_save(&$og, $validate = true, &$error = NULL) {
   
   if (!isset($og->logo)) $og->logo = '';
 
+  if (!isset($og->data)) $og->data = array();
+
   if ($og->oid) {
     $og->is_op = 'update';
     
+    if ($_og = og_load($og->oid)) {
+      if (is_array($_og->data)) {
+        $og->data = array_merge($_og->data, $og->data);
+      }
+    }
+
     if (db_write_record('og', $og, array('oid'))) {
       
-      $og->path = 'group/'.$og->alias;
+      $og->path = $_og->path;
       module_invoke_all('og_save', $og);
       
       return $og;

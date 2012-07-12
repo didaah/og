@@ -432,7 +432,7 @@ function og_node_view($node) {
   
   if ($user->uid > 0) {
     $breadcrumb = array(
-      l(t('og', '我的小组'), $user->path.'/group'),
+      l(t('og', '我的小组'), $user->path . '/group'),
     );
   } else {
     $breadcrumb = array(
@@ -441,10 +441,22 @@ function og_node_view($node) {
     );
   }
   
-  if (!empty($node->og->field_id)) {
+  $breadcrumb[] = l($node->og->og_name, $node->og->path);
+
+  if (!empty($node->fields) && is_array($node->og->default_field)) {
+    $field = current($node->og->default_field);
+    if (!empty($field->field_key)) {
+      if (is_array($node->fields[$field->field_key])) {
+        $term = current($node->fields[$field->field_key]);
+      } else {
+        $term = $node->fields[$field->field_key];
+      }
+
+      if ($term->name) $breadcrumb[] = l($term->name, $node->og->path . '/term/' . $term->tid);
+
+    }
   }
   
-  $breadcrumb[] = l($node->og->og_name, $node->og->path);
   $breadcrumb[] = $node->title;
   
   dd_set_breadcrumb($breadcrumb);
@@ -636,14 +648,14 @@ function og_logout($og) {
 function og_view_user($og) {
   global $user;
   
-  $output = og_view($og, 'user');
-  
   if ($user->uid) {
     dd_set_breadcrumb(array(l(t('og', '我的小组'), $user->path.'/group'), l($og->og_name, $og->path), t('og', '成员')));
   } else {
     dd_set_breadcrumb(array(l(t('og', '小组'), 'group/all'), l($og->og_name, $og->path), t('og', '成员')));
   }
-  
+
+  $og->content = '';
+
   if ($fetch = pager_query('SELECT o.uid, u.name FROM {og_user} o INNER JOIN {users} u ON o.uid = u.uid 
   WHERE o.oid = ? AND o.user_status = 1 ORDER BY o.timestamp DESC', 20, 0, NULL, array($og->oid))) {
     foreach ($fetch as $o) {
@@ -657,9 +669,9 @@ function og_view_user($og) {
     
     dd_add_css(dd_get_path('module', 'og').'/og.css');
     
-    $output .= theme('item_list', $item, NULL, 'ul', array('class' => 'og_view_users'));
-    $output .= pager_view();
+    $og->content = theme('item_list', $item, NULL, 'ul', array('class' => 'og_view_users'));
+    $og->pager = pager_view();
   }
   
-  return $output;
+  return og_view($og, 'user');
 }

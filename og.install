@@ -12,7 +12,7 @@ function og_update_12() {
     'unsigned' => TRUE,
     'not null' => TRUE,
     'default' => 0,
-    'size' => 'tiny',
+    'length' => 3,
     'description' => '非成员文章权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
   );
   
@@ -26,7 +26,7 @@ function og_update_12() {
     'unsigned' => TRUE,
     'not null' => TRUE,
     'default' => 0,
-    'size' => 'tiny',
+    'length' => 3,
     'description' => '非成员评论权限：0：不可评论，1、可评论',
   );
   
@@ -161,7 +161,7 @@ function og_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        'size' => 'tiny',
+        'length' => 3,
         'description' => '非成员文章权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
       ),
       'comment_access' => array(
@@ -169,7 +169,7 @@ function og_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        'size' => 'tiny',
+        'length' => 3,
         'description' => '非成员评论权限：0：可浏览，1、可浏览和发布，2、不可浏览和发布',
       ),
       'field_id' => array(

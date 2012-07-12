@@ -2,7 +2,11 @@
 // $Id$
 
 /**
- * 创建小组
+ * 创建/编辑小组表单
+ * @param object $og 
+ *  一个小组对象，若有值，则为编辑
+ * @access public
+ * @return array
  */
 function og_form($og = NULL) {
   global $user;
@@ -55,13 +59,19 @@ function og_form($og = NULL) {
       '#description' => t('og', '只有通过审核的小组才允许访问'),
       '#required' => 1,
     );
+  } else {
+     $form['fields']['status'] = array(
+      '#type' => 'hidden',
+      '#constant' => 1,
+      '#default_value' => !empty($og->status) ? $og->status : 0,
+    );   
   }
 
   $form['fields']['data']['des'] = array(
     '#type' => 'textarea',
     '#title' => t('og', '小组介绍'),
     '#required' => 1,
-    '#default_value' => $og->data['des'],
+    '#default_value' => !empty($og->data['des']) ? $og->data['des'] : '',
     '#weight' => -90,
     '#description' => t('og', '不超过 %string 个字符', array('%string' => var_get_key('og', 'des_max', 1000)))
   );
@@ -70,7 +80,7 @@ function og_form($og = NULL) {
     '#type' => 'textarea',
     '#title' => t('og', '其它名称'),
     '#weight' => -80,
-    '#default_value' => $og->data['alias_name'],
+    '#default_value' => !empty($og->data['alias_name']) && is_array($og->data['alias_name']) ? implode("\n", $og->data['alias_name']) : '',
     '#attributes' => array('rows' => 4),
     '#description' => t('og', '小组的其它名称，每行一个，不超过 %string 个', array('%string' => var_get_key('og', 'alias_name_max', 5)))
   ); 
@@ -168,17 +178,16 @@ function og_form_validate($form, &$v) {
 
 function og_form_submit(&$form, &$v) {
   if ($og = og_save($v['_dida_values'], false)) {
-    
     if (!isset($form['settings']['#redirect'])) {
       if ($og->status == 1) {
         $form['settings']['#redirect'] = url($og->path);
       } else {
-        $form['settings']['#redirect'] = url('user/'.$og->uid.'/group');
+        $form['settings']['#redirect'] = url('user/' . $og->uid . '/group');
       }
     }
     
-    dd_set_message(t('og', '创建成功'));
+    dd_set_message(t('og', '操作成功'));
   } else {
-    dd_set_message(t('og', '创建失败，请重试'));
+    dd_set_message(t('og', '操作失败，请重试'));
   }
 }
