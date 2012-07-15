@@ -438,7 +438,7 @@ function _og_settings_field($og) {
     if ($field->type != 'ext_node_' . $og->oid) dd_get_access();
   }
 
-  $url = 'group/' . $og->oid . '/settings/field';
+  $url = $og->path . '/settings/field';
   
   dd_jqui(); 
   dd_add_js(dd_get_path('module', 'system') . '/admin.js');
