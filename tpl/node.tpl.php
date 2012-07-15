@@ -8,7 +8,10 @@
     <div class="og_node_view_content">
 
       <ul class="og_node_view_header">
-        <li class="og_node_view_header_name"><strong>来自：</strong><?php echo theme('username', $node)?></li>
+        <li class="og_node_view_header_name">
+          <strong>来自：</strong><?php echo theme('username', $node)?>
+          <?php if (empty($node->uid))  echo dd_get_ip($node->data['insert_host'], 1, 0); ?>
+        </li>
         <li class="og_node_view_header_time"><strong>发布：</strong><?php echo format_date($node->created)?></li>
         <?php
 

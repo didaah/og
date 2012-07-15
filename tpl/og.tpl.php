@@ -26,20 +26,19 @@
       <span class="og_info_link_node_count">，<strong><?php echo $og->node_count ?></strong>个话题</span>
     <?php endif?>
     
-    <?php if ($og->links['addtopic']) { ?>
+    <?php if (!empty($og->links['addtopic'])) { ?>
       <a href="<?php echo $og->links['addtopic']?>" class="og_links_add_topic">我要发言</a>
     <?php } else {?>
       <a href="<?php echo $og->url?>" title="请先加入小组" class="og_links_add_topic confirm_msg">我要发言</a>
-    
-      <?php if ($og->links['join']) {?>
-        <a href="<?php echo $og->links['join']?>" class="og_links_join">加入小组</a>
-      <?php } else {?>
-        <a href="<?php echo $og->url?>" class="og_links_join login_msg">加入小组</a>
-      <?php }?>
-      
     <?php }?>
-    
-    <?php if ($og->links['logout']): ?>
+
+    <?php if (!empty($og->links['join'])) {?>
+      <a href="<?php echo $og->links['join']?>" class="og_links_join">加入小组</a>
+    <?php } else {?>
+      <a href="<?php echo $og->url?>" class="og_links_join login_msg">加入小组</a>
+    <?php }?>
+     
+    <?php if (!empty($og->links['logout'])): ?>
       <a href="<?php echo $og->links['logout']?>" class="og_links_logout confirm">退出小组</a>
     <?php endif?>
     

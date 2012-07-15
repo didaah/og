@@ -36,9 +36,9 @@ function og_menu() {
   $items['group/%/add/%'] = array(
     'load_functions' => array(1 => array('og_load', 0), 3 => '%a-z'),
     'access_callback' => 'og_access_node_create',
-    'access_arguments' => array(1, 3, 'true'),
+    'access_arguments' => array(1, 3),
     'page_callback' => 'dd_get_form',
-    'page_arguments' => array('og_node_form', 1),
+    'page_arguments' => array('og_node_form', NULL, 1, 3),
     'file' => 'og.node.inc',
   );
 
@@ -249,7 +249,7 @@ function og_load($alias, $load = true) {
     
     /**
      * 数据库中 node_access、comment_access 分别对应话题和评论权限
-     * 权限存储格式类似 linux，如：121，012 
+     * 权限存储格式类似 linux，如：121，112 
      * 用户分为三种类型：游客、组内成员、其它登录用户
      * 权限数字 个位对应游客，十位对应其它登录用户，百位对应组成员
      * 数字对应：1 表示无任何权限，2 表示可浏览，3 表示可浏览和发布
@@ -395,12 +395,12 @@ function og_access_view($og) {
   if ($og->status == 1) {
     // 群组状态正常
     
-    if ($og->type > 0) {
-      // 公开小组，所有人可访问
-      return true;
-    } else if ($GLOBALS['user']->uid) {
+    if ($og->type == 0) {
       // 秘密小组，只有组内成员可访问
-      return og_is_group_user($GLOBALS['user']->uid, $og);
+      return $GLOBALS['user']->uid && og_is_group_user($GLOBALS['user']->uid, $og);
+    } else {
+      // 公开小组，所有人可以浏览。针对话题和节点的权限控制此处不检查
+      return true;
     }
     
   } else if ($og->status == 0 && $og->uid == $GLOBALS['user']->uid) {
@@ -420,6 +420,7 @@ function og_access_view($og) {
  */
 function og_node_load($nid, $load = true) {
   static $data;
+
   if (!isset($data[$nid])) {
     if ($node = db_query('SELECT n.*, u.name FROM {og_node} n INNER JOIN {users} u
     ON n.uid = u.uid WHERE n.nid = ?', array($nid), array('return' => 'one'))) {
@@ -445,12 +446,29 @@ function og_node_load($nid, $load = true) {
 }
 
 /**
- * 小组节点浏览权限检查
+ * 小组话题浏览权限检查
  * @param (object) $node
  *  节点对象
  */
 function og_access_node_view($node) {
-  return $node->node_status > 0 && og_access_view($node->og);
+  static $data;
+
+  if (!isset($data[$node->nid])) {
+    $data[$node->nid] = false;
+    // 检查话题状态是否正常，且当前用户允许访问小组    
+    if ($node->node_status > 0 && og_access_view($node->og)) {
+      global $user;
+      if (!empty($node->og->access['node'])) {
+        $data[$node->nid] = (empty($user->uid) && $node->og->access['node']['anonymous'] > 1) 
+          || (!empty($user->uid) && $node->og->access['node']['user'] > 1)
+          || ($node->og->access['node']['og_user'] > 1 && og_is_group_user($user->uid, $node->og));
+      } else {
+        $data[$node->nid] = true;
+      }
+    }
+  }
+  
+  return $data[$node->nid];
 }
 
 /**
@@ -460,24 +478,33 @@ function og_access_node_view($node) {
  * @param (string) $type
  *  内容类型，由模块自定义
  */
-function og_access_node_create($og, $type, $goto = NULL) {
-  if (!$og->oid) return false;
-  
-  if ($og->status > 0) {
-    $og->og = new stdClass();
-    $og->node_type = $type;
-    $og->og = $og;
-    
-    return og_is_group_user($GLOBALS['user']->uid, $og);
-  } else if ($goto && og_is_group_user($GLOBALS['user']->uid, $og)) {
-    if ($og->status == -1) {
-      dd_set_message(t('og', '小组被屏蔽，暂时无法发言'));
-    } else if ($og->status == 0) {
-      dd_set_message(t('og', '小组尚未通过审核，暂时无法发言'));
-    }
-    dd_goto('group/'.$og->alias);
+function og_access_node_create($og, $type = 'topic') {
+  if (empty($og->oid)) return false;
+
+  if ($og->status == -1) {
+    dd_set_message(t('og', '小组被屏蔽，暂时无法发言'));
+    return false;
   }
-  
+
+  if ($og->status == 0) {
+    dd_set_message(t('og', '小组尚未通过审核，暂时无法发言'));
+    return false;
+  }
+
+  global $user;
+
+  // 私密小组，忽略其它权限设置，只允许组内成员发布内容
+  if ($og->type == 0) {
+    return !empty($user->uid) && og_is_group_user($user->uid, $og);
+  }
+
+  // 按用户组验证权限
+  if (!empty($og->access['node'])) {
+    return (empty($user->uid) && $og->access['node']['anonymous'] == 3) 
+      || (!empty($user->uid) && $og->access['node']['user'] == 3)
+      || ($og->access['node']['og_user'] == 3 && og_is_group_user($user->uid, $og));
+  }
+ 
   return false;
 }
 
@@ -521,24 +548,25 @@ function og_access_node_status($node) {
  *  用户 id
  * @param (object) $og
  *  小组对象
+ * @return bool
  */
 function og_is_group_user($uid, $og) {
   static $data;
-  if ($uid) {
-    if (!isset($data[$og->oid][$uid])) {
-      if (isset($og->uid) && $og->uid == $uid) {
-        $data[$og->oid][$uid] = true;
-      } else if (db_query('SELECT id FROM {og_user} WHERE oid = ? AND uid = ? AND user_status != -1',
-      array($og->oid, $uid), array('return' => 'column'))) {
-        $data[$og->oid][$uid] = true;
-      } else {
-        $data[$og->oid][$uid] = false;
-      }
+  
+  if (empty($uid)) return false;
+  
+  if (!isset($data[$og->oid][$uid])) {
+    if (isset($og->uid) && $og->uid == $uid) {
+      $data[$og->oid][$uid] = true;
+    } else if (db_query('SELECT id FROM {og_user} WHERE oid = ? AND uid = ? AND user_status != -1',
+    array($og->oid, $uid), array('return' => 'column'))) {
+      $data[$og->oid][$uid] = true;
+    } else {
+      $data[$og->oid][$uid] = false;
     }
-    return $data[$og->oid][$uid];
-  } else {
-    return false;
   }
+
+  return $data[$og->oid][$uid];
 }
 
 /**
@@ -569,9 +597,13 @@ function og_view($og, $op = 'page') {
   // @TODO 小组描述，只保留 a 链接。需增加功能：管理员可设置允许哪些标签
   $og->data['des'] = nl2br(strip_tags($og->data['des'], '<a>'));
 
+  // 添加内容的权限
+  if (og_access_node_create($og)) {
+    $og->links['addtopic'] = url($og->path . '/add/topic');
+  }
+
   if (og_is_group_user($user->uid, $og)) {
-    // 当前用户若为组内成员，可见的操作链接 
-    $og->links['addtopic'] = url($og->path . '/add/topic'); // 添加话题
+    // 当前用户若为组内成员，可见的操作链接
     if ($og->uid != $user->uid) {
       $og->links['logout'] = url($og->path . '/logout'); // 退出小组
     } else {
@@ -738,6 +770,7 @@ function og_save(&$og, $validate = true, &$error = NULL) {
     $og->created = $_SERVER['REQUEST_TIME'];
 
     if (db_write_record('og', $og)) {
+
       $og->alias = $og->oid;
       
       if (empty($alias)) {
@@ -835,17 +868,30 @@ function og_node_save(&$node, $validate = true, &$error = NULL) {
   }
  
   $node->og = og_load($node->oid);
-  
+
+  if (empty($node->data)) {
+    $node->data = array();
+  }
+
   if (!empty($node->nid)) {
     $node->is_op = 'update';
+
+    $node->data['update_host'] = ip_address();
+
+    $_old = og_node_load($node->nid);
+
+    if (!empty($_old->data)) {
+      $node->data = array_merge($_old->data, $node->data);
+    }
+
     if (db_write_record('og_node', $node, array('nid'))) {
       field_get_node_save('og', 'ext_node_' . $node->oid, $node);
       field_get_node_save('og', 'default', $node);
-
+      dd_log('og', t('og', '修改话题 %title', array('%title' => $node->title)), $node->oid, $node->og->path . '/' . $node->nid);
       module_invoke_all('og_node_save', $node);
-      
     }
   } else {
+    $node->data['insert_host'] = ip_address();
     if (empty($node->created)) $node->created = $node->updated;
     $node->is_op = 'insert';
     if (!isset($node->node_status )) $node->node_status = 1;
@@ -855,6 +901,8 @@ function og_node_save(&$node, $validate = true, &$error = NULL) {
     if ($node->nid) {
       og_set_node_count($node->oid); // 统计节点数量
       
+      dd_log('og', t('og', '创建话题 %title', array('%title' => $node->title)), $node->oid, $node->og->path . '/' . $node->nid);
+
       field_get_node_save('og', 'ext_node_' . $node->oid, $node);
       field_get_node_save('og', 'default', $node);
 
@@ -991,6 +1039,7 @@ function og_comment_info() {
     'og' => array(
       'name' => '回复',
       'default_status' => 1,
+      'user_anonymous' => true, // 默认匿名评论设置打开，用于小组权限控制
       'editor_text' => var_get_key('og', 'comment_editor', 1) == 1,
       'editor_html' => var_get_key('og', 'comment_editor', 1) == 2,
       'from_update_call' => 'og_get_comment_form_update',
@@ -1047,7 +1096,7 @@ function og_comment_save($comment) {
  */
 function og_comment_goto($comment) {
   if ($comment->ext_type == 'og') {
-    return 'group/node/'.$comment->ext_id;
+    return 'group/node/' . $comment->ext_id;
   }
 }
 
@@ -1096,20 +1145,103 @@ function og_comment_is_update($comment) {
 }
 
 /**
+ * 验证当有用户是否可以在指定节点下发布评论
+ * @param object $nid
+ *  节点 id
+ * @return bool
+ */
+function og_access_comment_create($nid) {
+  if (!$node = og_node_load($nid)) {
+    return false;
+  }
+  
+  /**
+   * 节点状态：0、回收站，1、正常，2、禁止回复
+   * 小组被屏蔽或未通过审核，不能发布评论
+   */
+  if ($node->node_status != 1 || $node->og->status < 1) return false;
+
+  if ($node->og->status < 1) return false;
+  
+  // 当前用户允许浏览节点
+  if (og_access_node_view($node)) {
+    global $user;
+
+    // 私密小组，忽略其它权限设置，只允许组内成员发布评论
+    if ($node->og->type == 0) {
+      return !empty($user->uid) && og_is_group_user($user->uid, $node->og);
+    }
+
+    // 按用户组验证权限
+    if (!empty($node->og->access['comment'])) {
+      return (empty($user->uid) && $node->og->access['comment']['anonymous'] == 3) 
+        || (!empty($user->uid) && $node->og->access['comment']['user'] == 3)
+        || ($node->og->access['comment']['og_user'] == 3 && og_is_group_user($user->uid, $node->og));
+    }
+  }
+ 
+  return false;
+}
+
+/**
  * 评论发布权限
- * @param (object) $comment
+ * @param object $comment
  */
 function og_comment_is_create($comment) {
-  if ($comment->ext_type == 'og' && $comment->ext_id) {
-    
-    /**
-     * 小组成员才能发布评论
-     */
-    if ($node = og_node_load($comment->ext_id)) {
-    
-      $comment->is_create = og_access_node_view($node) && og_is_group_user($GLOBALS['user']->uid, $node->og) 
-        && $node->node_status == 1;
+  if ($comment->ext_type == 'og' && $comment->ext_id) { 
+    $comment->is_create = og_access_comment_create($comment->ext_id);
+  }
+}
+
+/**
+ * 验证当有用户是否可浏览节点所属评论
+ * @param object $nid
+ *  节点 id
+ * @return bool
+ */
+function og_access_comment_view($nid) {
+  if (!$node = og_node_load($nid)) {
+    return false;
+  }
+  
+  /**
+   * 小组被屏蔽或未通过审核，不能浏览其评论
+   * 回收站里的节点，不允许浏览其评论
+   */
+  if ($node->node_status == 0 || $node->og->status < 1) return false;
+
+  // 当前用户允许浏览节点
+  if (og_access_node_view($node)) {
+    global $user;
+
+    // 私密小组，忽略其它权限设置，只允许组内成员浏览评论
+    if ($node->og->type == 0) {
+      return !empty($user->uid) && og_is_group_user($user->uid, $node->og);
     }
+
+    // 按用户组验证权限
+    if (!empty($node->og->access['comment'])) {
+      return (empty($user->uid) && $node->og->access['comment']['anonymous'] > 1) 
+        || (!empty($user->uid) && $node->og->access['comment']['user'] > 1)
+        || ($node->og->access['comment']['og_user'] > 1 && og_is_group_user($user->uid, $node->og));
+    }
+  }
+ 
+  return false;
+}
+
+/**
+ * 评论浏览权限
+ * @param object $comment
+ */
+function og_comment_is_view($comment) {
+  static $data;
+
+  if ($comment->ext_type == 'og' && $comment->ext_id) {
+    if (!isset($data[$comment->ext_id])) {
+      $data[$comment->ext_id] = og_access_comment_view($comment->ext_id);
+    }
+    $comment->is_create = $data[$comment->ext_id];
   }
 }
 

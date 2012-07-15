@@ -2,12 +2,28 @@
 // $Id$
 
 /**
- * 小组节点表单
- * @param (object) $node
+ * 小组节点添加/编辑表单
+ * @param object $node
  *  节点对象，其中 $node->og 为小组对象
+ * @param object $og
+ *  若为添加节点，可以只传递小组对象
+ * @param string $node_type
+ *  节点类型，默认为话题
+ * @return array
  */
-function og_node_form($node) {
+function og_node_form($node, $og = NULL, $node_type = NULL) {
   global $user;
+
+  if (empty($node)) {
+    if (empty($og->oid)) {
+      echo dd_get_access();
+      exit;
+    }
+    $node = new stdClass();
+    $node->og = $og;
+    $node->oid = $og->oid;
+    $node->node_type = $node_type;
+  }
 
   $types = og_og_node_info();
   

@@ -219,6 +219,7 @@ function og_schema() {
     ),
     'primary key' => array('oid'),
   );
+
   $schema['og_node'] = array(
     'description' => '群组节点',
     'fields' => array(
@@ -401,6 +402,7 @@ function og_schema() {
     ),
     'primary key' => array('id'),
   );
+
   return $schema;
 }
 

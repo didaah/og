@@ -488,9 +488,9 @@ function og_node_view($node) {
       $node->is_recycle = true;
     }
   }
-  
-  if (og_is_group_user($user->uid, $node->og)) {
-    if ($node->node_status == 1) {
+
+  if ($node->node_status == 1) {
+    if (og_access_comment_create($node->nid)) {
       $comment = new stdClass;
       $comment->ext_type = 'og';
       $comment->ext_id = $node->nid;
@@ -498,23 +498,28 @@ function og_node_view($node) {
       $comment->title = t('og', '回复：!title', array('!title' => $node->title));
       $node->is_comment = true; 
       $node->comment_form = dd_get_form('comment_form', $comment);
+    } else if ($user->uid) {
+      $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), $node->og->path.'/join', dd_redirect());
     } else {
-      $node->comment_form = t('og', '评论已禁止');
+      $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), 'user/login', dd_redirect());
     }
-  } else if ($user->uid) {
-    $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), $node->og->path.'/join', dd_redirect());
   } else {
-    $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), 'user/login', dd_redirect());
+    $node->comment_form = t('og', '评论已禁止');
   }
   
   if ($node->comment_count) {
     
-    if ($data = comment_ext_view('og', $node->nid, var_get('og_comment_page_count', 20), true)) {
-      $node->comment_view = $data->view;
-      $node->comment_pager = $data->pager;
-    } else if (!empty($_GET['filter_comment'])) {
-      $node->comment_view = system_no_content(l(t('og', '该用户没有发布评论，返回查看话题下的全部评论'), 'group/node/' . $node->nid));
-      $node->comment_pager = '';
+    $node->comment_pager = '';
+
+    if (og_access_comment_view($node->nid)) {
+      if ($data = comment_ext_view('og', $node->nid, var_get('og_comment_page_count', 20), true)) {
+        $node->comment_view = $data->view;
+        $node->comment_pager = $data->pager;
+      } else if (!empty($_GET['filter_comment'])) {
+        $node->comment_view = system_no_content(l(t('og', '该用户没有发布评论，返回查看话题下的全部评论'), 'group/node/' . $node->nid));
+      }
+    } else {
+      $node->comment_view = system_no_content(t('og', '你没有查看评论的权限'));
     }
     
     $node->filter_comment = url('group/node/' . $node->nid, array('query' => 'filter_comment=' . $node->uid));
