@@ -313,7 +313,7 @@ function og_load($alias, $load = true) {
 
 /**
  * 验证创建小组的权限
- * @param (object) $ac
+ * @param object $ac
  *  用户对象，不指定则为当前用户
  */
 function og_is_add($ac = NULL) {
@@ -341,7 +341,7 @@ function og_is_add($ac = NULL) {
 
 /**
  * 加入小组权限
- * @param (object) $og
+ * @param object $og
  */
 function og_access_join($og) {
   /**
@@ -350,7 +350,6 @@ function og_access_join($og) {
    * status 状态：
    *  -1、管理员屏蔽，0：待审核，1、正常
    */
-  
   return $og->status == 1 && ($og->type == 1 || $og->type == 2) 
   && !og_is_group_user($GLOBALS['user']->uid, $og) && !module_invoke_all('og_access_join', $og);
 }
@@ -544,9 +543,10 @@ function og_access_node_status($node) {
 
 /**
  * 检查当前用户是否为小组成员
- * @param (int) $uid
+ * 注意：未通过审核用户、当前小组已禁止用户，属于小组特殊成员，本函数返回 false
+ * @param int $uid
  *  用户 id
- * @param (object) $og
+ * @param object $og
  *  小组对象
  * @return bool
  */
@@ -558,7 +558,7 @@ function og_is_group_user($uid, $og) {
   if (!isset($data[$og->oid][$uid])) {
     if (isset($og->uid) && $og->uid == $uid) {
       $data[$og->oid][$uid] = true;
-    } else if (db_query('SELECT id FROM {og_user} WHERE oid = ? AND uid = ? AND user_status != -1',
+    } else if (db_query('SELECT id FROM {og_user} WHERE oid = ? AND user_status = 1 AND uid = ?',
     array($og->oid, $uid), array('return' => 'column'))) {
       $data[$og->oid][$uid] = true;
     } else {
@@ -602,7 +602,7 @@ function og_view($og, $op = 'page') {
     $og->links['addtopic'] = url($og->path . '/add/topic');
   }
 
-  if (og_is_group_user($user->uid, $og)) {
+  if ($og->is_user = og_is_group_user($user->uid, $og)) {
     // 当前用户若为组内成员，可见的操作链接
     if ($og->uid != $user->uid) {
       $og->links['logout'] = url($og->path . '/logout'); // 退出小组
@@ -614,11 +614,10 @@ function og_view($og, $op = 'page') {
   }
 
   // 导航
-  $og->tabs = array();
+  $og->tabs = array(l(t('og', '全部话题'), $og->path));
 
   // 读取设置为默认导航的字段
   if (!empty($og->default_field)) {
-    $og->tabs = array(l(t('og', '全部话题'), $og->path));
     foreach ($og->default_field as $term) {
       $og->tabs['_term_' . $term->tid] = l($term->name, $og->path . '/term/' . $term->tid);
     }
@@ -627,6 +626,7 @@ function og_view($og, $op = 'page') {
   $og->url = url($og->path);
   
   if ($op == 'page') {
+
     $header = array(
       t('og', '标题'),
       array('data' => t('og', '作者'), 'field' => 'n.uid'),
@@ -634,8 +634,7 @@ function og_view($og, $op = 'page') {
       array('data' => t('og', '回应'), 'field' => 'n.comment_count'),
       array('data' => t('og', '更新时间'), 'field' => 'n.updated', 'sort' => 'desc'),
     );
-
-
+    
     if ($user->uid > 0) {
       $breadcrumb = array(
         l(t('og', '小组'), 'group/all'), l(t('og', '我的小组'), $user->path . '/group')
@@ -653,7 +652,7 @@ function og_view($og, $op = 'page') {
 
       // 分类不属于默认字段，向默认字段添加一个单元
       if ($og->term->field_id != $og->field_id) {
-        $og->default_field[] = $og->term;
+        $og->tabs['_term_' . $og->term->tid] = l($og->term->name, $og->path . '/term/' . $og->term->tid);
       }
 
       dd_set_title(array(
@@ -702,9 +701,9 @@ function og_view($og, $op = 'page') {
       'description' => mb_substr(str_replace(array("\n", "\t", "\r", ' ', '　'), '', strip_tags($og->data['des'])), 0, 250) .'…'
     ));
      
-    if ($og->is_group_admin && $og->data['user_wait_status']) {
-      dd_set_message(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
-      array('%a' => $og->data['user_wait_status'], '!url' => url($og->path.'/settings/user', array('query' => 'status=0')))));
+    if ($og->is_group_admin && !empty($og->data['user_wait_status'])) {
+      dd_set_help(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
+      array('%a' => $og->data['user_wait_status'], '!url' => url($og->path . '/settings/user/wait', array('query' => 'status=0')))));
     }
     
     $og->feed_og_url = f('custom.php?module=og&op=feed&type=node&bootstrap=full&oid='.$og->oid);
@@ -1218,7 +1217,7 @@ function og_access_comment_view($nid) {
     if ($node->og->type == 0) {
       return !empty($user->uid) && og_is_group_user($user->uid, $node->og);
     }
-
+    
     // 按用户组验证权限
     if (!empty($node->og->access['comment'])) {
       return (empty($user->uid) && $node->og->access['comment']['anonymous'] > 1) 
@@ -1321,28 +1320,30 @@ function og_set_comment_count($nid) {
 
 /**
  * 获取小组待审核成员数量
- * @param (int) $oid
+ * @param int $oid
  *  小组 id
+ * @return int
  */
 function og_set_user_wait($oid) {
   $count = db_query('SELECT COUNT(id) FROM {og_user} WHERE oid = ? AND user_status = 0',
   array($oid), array('return' => 'column'));
-  og_set_data($oid, array('user_wait_status', $count));
+  og_set_data($oid, array('user_wait_status' => $count));
+  return $count;
 }
 
 /**
  * 写入自定义数据，即 $og->data
  * 数值以键值形式序列化保存，相同键值将覆盖
- * @param (int)$oid
+ * @param int $oid
  *  小组 id
- * @param (array)$value
+ * @param array $value
  *  需保存的数据，值对格式
  */
-function og_set_data($oid, $value = array()) {
+function og_set_data($oid, array $value) {
   global $user;
   if ($o = db_query('SELECT oid, data FROM {og} WHERE oid = ?', array($oid), array('return' => 'one'))) {
     $data = array();
-    if ($o->data) $data = unserialize($o->data);
+    if (!empty($o->data)) $data = unserialize($o->data);
     $data = array_merge($data, $value);
     db_exec('UPDATE {og} SET data = ? WHERE oid = ?', array(serialize($data), $o->oid));
     return $data;

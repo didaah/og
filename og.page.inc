@@ -499,7 +499,7 @@ function og_node_view($node) {
       $node->is_comment = true; 
       $node->comment_form = dd_get_form('comment_form', $comment);
     } else if ($user->uid) {
-      $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), $node->og->path.'/join', dd_redirect());
+      $node->comment_form = t('og', '你已是小组成员，但根据小组权限设定，你不能发布评论');
     } else {
       $node->comment_form = l(t('og', '你需要加入小组才能发布评论'), 'user/login', dd_redirect());
     }
@@ -553,39 +553,60 @@ function og_node_view($node) {
  * @param (object) $og
  */
 function og_join($og) {
+  global $user;
+  
+  dd_set_breadcrumb(array(
+    l(t('og', '我的小组'), $user->path.'/group'),
+    l($og->og_name, $og->path),
+    t('og', '加入申请')
+  ));
+
+  if ($obj = db_query('SELECT * FROM {og_user} WHERE oid = ? AND uid = ?',
+  array($og->oid, $user->uid), array('return' => 'one'))) {
+    if ($obj->user_status == 0) {
+      $help = t('og', '你已于 %time 提交了加入申请，请耐心等待小组管理员审核', array('%time' => format_date($obj->timestamp)));
+    } else if ($obj->user_status == -1) {
+      $help = t('og', '你已被加入小组黑名单，如需解除，请联系小组管理员');
+    }
+    
+    dd_set_help($help);
+
+    return;
+  }
+
   if ($og->type == 2) {
     $form['fields']['msg'] = array(
       '#title' => t('og', '需要审核'),
       '#value' => t('og', '小组设置了身份验证，需要通过审核才能加入')
     );
+
     $form['fields']['value'] = array(
       '#title' => t('og', '验证消息'),
       '#type' => 'textfield',
       '#description' => t('og', '告诉小组管理员，你是谁，为什么要加入小组')
     );
+
     $form['fields']['uid'] = array(
       '#type' => 'hidden',
-      '#default_value' => $GLOBALS['user']->uid,
+      '#default_value' => $user->uid,
       '#constant' => 1
     );
+
     $form['fields']['oid'] = array(
       '#type' => 'hidden',
       '#default_value' => $og->oid,
       '#constant' => 1
     );
+
     $form['fields']['path'] = array(
       '#type' => 'hidden',
       '#default_value' => $og->path,
       '#constant' => 1
     );
+
     $form['fields']['submit']['#type'] = 'submit';
     $form['settings']['#validate'][] = 'og_join_validate';
-    
-    dd_set_breadcrumb(array(
-      l(t('og', '我的小组'), $user->path.'/group'),
-      l($og->og_name, $og->path),
-      t('og', '加入申请')
-    ));
+
   } else if ($og->type == 1) {
     if (db_exec('INSERT INTO {og_user} (uid, oid, user_status, rid, value, timestamp) VALUES (?, ?, 1, 0, ?, ?)',
     array($GLOBALS['user']->uid, $og->oid, '', $_SERVER['REQUEST_TIME']))) {
@@ -595,12 +616,13 @@ function og_join($og) {
       dd_goto($og->path);
     }
   }
+
   return $form;
 }
 
 function og_join_validate($form, $v) {
-  if ($o = db_query('SELECT id, user_status, FROM {og_user} WHERE oid = ? AND uid = ?',
-  array($v['oid'], $v['uid']), array('return' => 'column'))) {
+  if ($o = db_query('SELECT id, user_status FROM {og_user} WHERE oid = ? AND uid = ?',
+  array($v['oid'], $v['uid']), array('return' => 'one'))) {
     if ($o->user_status == -1) {
       dd_set_message(t('og', '错误的访问'));
       dd_goto('user/'.$v['uid']);
@@ -617,7 +639,7 @@ function og_join_validate($form, $v) {
     dd_log('og', t('og', '申请加入'), $v['oid'], $v['path'], 0, $v['uid']);
     og_set_user_wait($v['oid']);
     
-    dd_goto('user/'.$v['uid']);
+    dd_goto('user/' . $v['uid']);
   }
 }
 

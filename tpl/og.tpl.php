@@ -32,15 +32,17 @@
       <a href="<?php echo $og->url?>" title="请先加入小组" class="og_links_add_topic confirm_msg">我要发言</a>
     <?php }?>
 
-    <?php if (!empty($og->links['join'])) {?>
-      <a href="<?php echo $og->links['join']?>" class="og_links_join">加入小组</a>
-    <?php } else {?>
-      <a href="<?php echo $og->url?>" class="og_links_join login_msg">加入小组</a>
-    <?php }?>
-     
-    <?php if (!empty($og->links['logout'])): ?>
+    <?php if (!$og->is_user) { ?>
+      <?php if (!empty($og->links['join'])) {?>
+        <a href="<?php echo $og->links['join']?>" class="og_links_join">加入小组</a>
+      <?php } else {?>
+        <a href="<?php echo $og->url?>" class="og_links_join login_msg">加入小组</a>
+      <?php }?>
+    <?php } ?>
+
+    <?php if (!empty($og->links['logout'])) : ?>
       <a href="<?php echo $og->links['logout']?>" class="og_links_logout confirm">退出小组</a>
-    <?php endif?>
+    <?php endif ?>
     
     <?php if ($og->links['admin']): ?>
       <a href="<?php echo $og->links['admin']?>" class="og_links_admin">管理小组</a>
@@ -50,7 +52,7 @@
 </div>
 
 <?php 
-  if (!empty($og->tabs)) {
+  if (count($og->tabs) > 1) {
     echo theme('item_list', $og->tabs, NULL, 'ul', array('class' => 'tabs'));
   }
 ?>

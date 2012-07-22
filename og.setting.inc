@@ -3,9 +3,9 @@
 
 function og_update($og) {
   
-  if ($og->data['user_wait_status']) {
-    dd_set_message(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
-    array('%a' => $og->data['user_wait_status'], '!url' => url($og->path.'/settings/user', array('query' => 'status=0')))));
+  if (!empty($og->data['user_wait_status'])) {
+    dd_set_help(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
+    array('%a' => $og->data['user_wait_status'], '!url' => url($og->path . '/settings/user/wait', array('query' => 'status=0')))));
   }
   
   switch (arg(3)) {
@@ -360,34 +360,65 @@ function og_settings_nodes($og) {
  * @param (object) $og
  */
 function og_settings_users($og) {
-  if ($_GET['op'] == 'status') {
-    
-    // 管理员
-    if ($_GET['uid'] == $og->uid) {
-      echo -1;
+  global $user;
+
+  if (!empty($_POST) && !empty($_GET['op'])) { 
+
+    // 不允许对小组创始人(管理员)进行操作
+    if (empty($_GET['uid']) || $_GET['uid'] == $og->uid) {
+      echo t('og', '错误的访问');
       exit;
     }
-    
-    if ($_POST['value'] == -1) {
-      $text = t('og', '禁止访问');
-    } else if ($_POST['value'] == 0) {
-      $text = t('og', '取消审核');
-    } else if ($_POST['value'] == 1) {
-      $text = t('og', '审核通过');
-    } else {
-      echo -1;
+
+    // 检查要操作的用户是否存在
+    if (!$name = db_query('SELECT name FROM {users} WHERE uid = ?',
+    array($_GET['uid']), array('return' => 'column'))) {
+      echo t('og', '错误的访问');
       exit;
     }
-    
-    if ($uid = db_query('SELECT uid FROM {og_user} WHERE uid = ? AND oid = ? AND user_status != ?',
-    array($_GET['uid'], $og->oid, $_POST['value']), array('return' => 'column'))) {
-      if (db_exec('UPDATE {og_node} SET node_status = ? WHERE nid = ?', array($_POST['value'], $o->nid))) {
-        og_set_user_count($og->oid);
-        dd_log('og', $text, $og->oid);
-        echo 1;
+
+    if ($_GET['op'] == 'status') {
+      $value = $_GET['value'];
+
+      if ($value == -1) {
+        $text = t('og', '将 %name 加入黑名单', array('%name' => $name));
+      } else if ($value == 0) {
+        $text = t('og', '将 %name 加入待审核', array('%name' => $name));
+      } else if ($value == 1) {
+        $text = t('og', '将 %name 加入已审核', array('%name' => $name));
+      } else {
+        echo -1;
+        exit;
       }
-    } else {
-      echo -1;
+      
+      if ($uid = db_query('SELECT uid FROM {og_user} WHERE oid = ? AND user_status != ? AND uid = ?',
+      array($og->oid, $value, $_GET['uid']), array('return' => 'column'))) {
+        if (db_exec('UPDATE {og_user} SET user_status = ? WHERE uid = ?', array($value, $uid))) {
+          // 重新统计小组成员总数
+          og_set_user_count($og->oid);
+          // 写入日志
+          dd_log('og', $text, $og->oid);
+          echo 'reload';
+        }
+      } else {
+        echo t('og', '操作失败');
+      }
+      
+      og_set_user_wait($og->oid);
+
+      exit;
+    } else if ($_GET['op'] == 'delete') {
+      if (db_exec('DELETE FROM {og_user} WHERE oid = ? AND uid = ?', array($og->oid, $_GET['uid']))) {
+        // 重新统计小组成员总数
+        og_set_user_count($og->oid);
+        // 重新统计待审核成员总数
+        og_set_user_wait($og->oid);
+        // 写入日志
+        dd_log('og', t('og', '删除成员 %name', array('%name' => $name)), $og->oid);
+        echo 'tr';
+      } else {
+        echo t('og', '删除失败');
+      }
     }
     exit;
   }
@@ -395,29 +426,63 @@ function og_settings_users($og) {
   $header = array(
     array('data' => t('og', '成员'), 'field' => 'o.uid'),
     array('data' => t('og', '加入时间'), 'field' => 'o.timestamp', 'sort' => 'desc'),
-    t('og', '状态')
+    array('data' => t('og', '状态'), 'field' => 'o.user_status'),
+    t('og', '操作')
   );
   
-  if ($fetch = pager_query('SELECT o.uid, o.timestamp, o.user_status, u.name FROM {og_user} o INNER JOIN {users} u 
-  ON o.uid = u.uid WHERE o.oid = ?'.table_sql($header), 20, 0, NULL, array($og->oid))) {
+  $query = 'SELECT o.*, u.name FROM {og_user} o INNER JOIN {users} u ON o.uid = u.uid WHERE o.oid = ?';
+  $args = array($og->oid);
+
+  if (is_numeric($_GET['status'])) {
+    $query .= ' AND o.user_status = ?';
+    $args[] = $_GET['status'];
+  }
+  
+  dd_set_sub_tabs(array(
+    l(t('og', '全部成员'), $og->path . '/settings/user'),
+    l(t('og', '待审核'), $og->path . '/settings/user/wait', array('query' => 'status=0')),
+    l(t('og', '黑名单'), $og->path . '/settings/user/blacklist', array('query' => 'status=-1')),
+  ));
+
+  if ($fetch = pager_query($query . table_sql($header), 20, 0, NULL, $args)) {
+    $status = array(
+      -1 => t('og', '黑名单'),
+      0 => t('og', '待审核'),
+      1 => t('og', '正常'),
+    );
+
     foreach ($fetch as $o) {
       if ($og->uid != $o->uid) {
-        $data = dd_form_select(
-            array(
-              '#value' => $o->user_status,
-              '#attributes' => array(
-                'class' => 'changeconfirm dd_form_ajax_field',
-                'href' => url($_GET['q'], array('query' => 'op=status&uid='.$o->uid))
-              ),
-              '#name' => 'og_users_'.$o->uid,
-              '#options' => array(1 => t('og', '正常'), 0 => t('og', '待审核'), -1 => t('og', '禁止访问'))
-            )
-          );
+        $links = array();
+
+        $url = url($_GET['q'], array('query' => 'uid=' . $o->uid));
+
+        if ($o->user_status != -1) {
+          $links[] = '<a href="' . $url . '&op=status&value=-1" method="POST" class="confirmajax">' . t('og', '加入黑名单') . '</a>';
+        }
+
+        if ($o->user_status == 0) {
+          $links[] = '<a href="' . $url . '&op=status&value=1" method="POST" class="confirmajax">' . t('og', '批准加入') . '</a>';
+        }
+
+        $links[] = '<a href="' . $url . '&op=delete" method="POST" class="confirmajax">' . t('og', '删除成员') . '</a>';
+
+        $data = dd_imp($links);
+
+        if ($o->user_status == 0) {
+          $data .= '<p class="center og_settings_user_message">' . t('og', '验证消息: %text', array('%text' => ($o->value ? $o->value : t('og', '无')))) . '</p>';
+        }
+
       } else {
-        $data = '<span class="red">'.t('og', '组长').'</span>';
+        $data = '<span class="red">' . t('og', '组长') . '</span>';
       }
       
-      $table[] = array(theme('username', $o), format_date($o->timestamp), $data);
+      $table[] = array(
+        theme('username', $o),
+        format_date($o->timestamp),
+        $status[$o->user_status],
+        $data,
+      );
     }
     
     $output = theme('table', $header, $table, array('class' => 'og_settings_users'));
