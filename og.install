@@ -91,6 +91,8 @@ function og_update_10() {
  * @Implement of hook_schema()
  */
 function og_schema() {
+  $schema = array();
+
   $schema['og'] = array(
     'description' => '群组',
     'fields' => array(

@@ -87,6 +87,7 @@ function og_menu() {
     'page_arguments' => array('og_join', 1),
     'file' => 'og.page.inc',
   );
+
   $items['group/%/logout'] = array(
     'description' => '退出小组',
     'load_functions' => array(1 => array('og_load')),

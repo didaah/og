@@ -10,6 +10,14 @@
  */
 function og_form($og = NULL) {
   global $user;
+
+  $form = array(
+    'fields' => array(),
+    'settings' => array(
+      '#validate' => array('og_form_validate'),
+      '#ajax_validate' => 1,
+    )
+  );
   
   if (empty($og->oid)) {
     if (!og_is_add($user)) {
@@ -93,11 +101,15 @@ function og_form($og = NULL) {
       0 => t('og', '秘密小组'),
       1 => t('og', '任何人都可以直接加入'),
       2 => t('og', '只有通过审核才能加入'),
-      3 => t('og', '只有获得邀请才能加入'),
     ),
     '#required' => 1,
     '#description' => t('og', '秘密小组及组内文章，只有成员可见，不会出现在任何公共列表中')
   );
+
+  // 启用了邀请模块
+  if (module_exists('invite')) {
+    $form['fields']['type']['#options'][3] = t('og', '只有获得邀请才能加入');
+  }
 
   if (empty($og->access['node'])) {
     $og->access = array(
@@ -155,11 +167,7 @@ function og_form($og = NULL) {
     '#constant' => 1,
   );
   
-  $form['settings'] = array(
-    '#validate' => array('og_form_validate'),
-    '#ajax_validate' => 1,
-  );
-  
+ 
   $form['fields']['submit'] = array(
     '#type' => 'submit',
     '#weight' => 100,
