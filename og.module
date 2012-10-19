@@ -628,6 +628,10 @@ function og_view($og, $op = 'page') {
   
   if ($op == 'page') {
 
+    if (module_exists('solr')) {
+      $og->search_form = dd_get_form('solr_search_form', 'og_node', NULL, array('oid' => $og->oid));
+    }
+
     $header = array(
       t('og', '标题'),
       array('data' => t('og', '作者'), 'field' => 'n.uid'),

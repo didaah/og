@@ -65,6 +65,8 @@
 
 <?php endif; ?>
 
+<div class="og_search_form"><?php echo $og->search_form; ?></div>
+
 <div class="og_node">
   <?php 
     if (!empty($og->nodes)) {

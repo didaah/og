@@ -50,6 +50,10 @@ td.og_admin_td_title, .og_node_list_title{
 	margin: 5px;
 }
 
+.og_search_form {
+  text-align: right;
+}
+
 .og_info_content{
 	margin: 5px;
 }
