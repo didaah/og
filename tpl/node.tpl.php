@@ -7,33 +7,21 @@
   <div class="og_node_view_node">
     <div class="og_node_view_content">
 
-      <ul class="og_node_view_header">
-        <li class="og_node_view_header_name">
-          <strong>来自：</strong><?php echo theme('username', $node)?>
-          <?php if (empty($node->uid))  echo dd_get_ip($node->data['insert_host'], 1, 0); ?>
-        </li>
-        <li class="og_node_view_header_time"><strong>发布：</strong><?php echo format_date($node->created)?></li>
-        <?php
-
-        if (!empty($node->fields)) {
-          foreach ($node->field_view as $field_type => $datas) { 
-            foreach ($datas as $type => $data) {
-              echo '<li class="og_node_view_fields_list og_node_view_fields_list_' . $field_type . ' og_node_view_fields_list_' . $type . '">';
-              switch ($field_type) {
-                case 'category': case 'tags':
-                  echo dd_get_strong($data['#name']) . str_replace('category/', $node->og->path . '/term/', $data['#content']);
-                break;
-                default: // 其它字段类型
-                  echo dd_get_strong($data['#name']) . '<span>' .  $data['#content'] . '</span>';
-                break;
-              }
-              echo '</li>';
+      <div class="og_node_view_header">
+        <p>
+        <span class="og_node_view_header_name">
+          <?php 
+            if (!empty($node->uid)) {
+              echo theme('username', $node);
+            } else {
+              echo dd_get_ip($node->data['insert_host'], 1, 0);
             }
-          }
-        }
-
-        ?>
-      </ul>
+          ?>
+        </span>
+        <span class="og_node_view_header_time"><?php echo t('og', '发布于 !time', array('!time' => format_date($node->created)))?></span>
+        </p>
+        <?php if (!empty($node->field_html)) : ?><?php echo $node->field_html; ?><?php endif; ?>
+      </div>
 
       <div class="og_node_view_body clearfix"><?php echo $node->body?></div>
     </div>

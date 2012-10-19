@@ -98,23 +98,19 @@ td.og_admin_td_title, .og_node_list_title{
 	padding-right: 8px;
 }
 
-.og_node_view_header{
+.og_node_view_header {
 	padding: 6px;
-	border-bottom: 1px solid #eee;
 	border-top: 1px solid #eee;
 }
 
-.og_node_view_header a {
-	padding-right: 10px;
-}
-
-.og_node_view_fields_list_file, .og_node_view_fields_list_textarea {
+.og_node_view_header p {
+  padding: 5px 0;
+  color: #666;
 	border-bottom: 1px solid #eee;
 }
 
-.og_node_view_fields_list_file span, .og_node_view_fields_list_textarea span {
-  display: block;
-  padding:5px 10px;
+.og_node_view_header a {
+	padding-right: 5px;
 }
 
 .og_node_view_body{

@@ -538,8 +538,9 @@ function og_node_view($node) {
   module_alter_all('og_node_view', $node);
 
   if (!empty($node->fields)) {
-    field_get_node_view('og', 'ext_node_' . $node->oid, $node);
-    field_get_node_view('og', 'default', $node);
+    field_get_node_view('og', 'ext_node_' . $node->oid, $node, 2);
+    field_get_node_view('og', 'default', $node, 2);
+    $node->field_html = field_get_node_html('og', $node);
   }
   
   dd_set_title(array($node->title, $node->og->og_name));
