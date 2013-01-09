@@ -4,7 +4,7 @@
 /**
  * 默认语言：Chinese, Simplified(简体中文)(zh-hans)
  * 翻译语言：Chinese, Traditional(繁體中文)(zh-hant)
- * 共有 239 条翻译
+ * 共有 240 条翻译
  */
 
 $lang = array (
@@ -247,6 +247,7 @@ $lang = array (
   '删除成员' => '删除成员',
   '验证消息: %text' => '验证消息: %text',
   '无' => '无',
+  '发布于 !time' => '发布于 !time',
 );
 $js_lang = array (
 );

@@ -4,7 +4,7 @@
 /**
  * 默认语言：Chinese, Simplified(简体中文)(zh-hans)
  * 翻译语言：English(en)
- * 共有 235 条翻译
+ * 共有 239 条翻译
  */
 
 $lang = array (
@@ -243,6 +243,10 @@ $lang = array (
   '验证消息: %text' => '验证消息: %text',
   '无' => '无',
   'ext_node_' => 'ext_node_',
+  '发布于 !time' => '发布于 !time',
+  '别名设置' => '别名设置',
+  '设置了小组图标' => '设置了小组图标',
+  '设置了别名：!alias' => '设置了别名：!alias',
 );
 $js_lang = array (
 );

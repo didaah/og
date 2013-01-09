@@ -64,7 +64,7 @@ function og_update($og) {
     l(t('og', '内容管理'), $og->path.'/settings/node'),
     l(t('og', '内容字段'), $og->path.'/settings/field'),
     l(t('og', '小组图标'), $og->path.'/settings/logo'),
-    l(t('og', '访问别名'), $og->path.'/settings/alias'),
+    l(t('og', '别名设置'), $og->path.'/settings/alias'),
     l(t('og', '返回小组首页'), $og->path),
   ));
   
@@ -134,6 +134,7 @@ function og_update_logo_submit($form, $v) {
   );
   
   if ($file = file_save_upload($_FILES['file'], $validate, 0)) {
+    dd_log('og', t('og', '设置了小组图标'), $v['oid']);
     if ($file->filepath == $v['logo']) {
       file_delete_dir(file_directory_path() . '/group/logo/'.$v['oid']);
     } else {
@@ -205,6 +206,7 @@ function og_update_alias_validate($form, $v) {
     }
     
     db_exec('UPDATE {og} SET alias = ? WHERE oid = ?', array($v['alias'], $v['oid']));
+    dd_log('og', t('og', '设置了别名：!alias', array('!alias' => $v['alias'])), $v['oid']);
     dd_set_message(t('og', '修改成功'));
     dd_goto('group/'.$v['alias'].'/settings/alias');
     

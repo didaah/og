@@ -1041,13 +1041,10 @@ function og_comment_info() {
    */
   return array(
     'og' => array(
-      'name' => '回复',
+      'name' => t('og', '小组话题回复'),
       'default_status' => 1,
       'user_anonymous' => true, // 默认匿名评论设置打开，用于小组权限控制
-      'editor_text' => var_get_key('og', 'comment_editor', 1) == 1,
-      'editor_html' => var_get_key('og', 'comment_editor', 1) == 2,
-      'from_update_call' => 'og_get_comment_form_update',
-      'from_insert_call' => 'og_get_comment_form_insert',
+      'editor' => true, // 默认使用编辑器，由管理员自行设置
     )
   );
 }
@@ -1250,21 +1247,12 @@ function og_comment_is_view($comment) {
 }
 
 /**
- * 评论编辑表单，回调函数
- * @param (array) $form
- * @param (object) $comment
+ * @Implement of hook_comment_form()
  */
-function og_get_comment_form_update(&$form, &$comment) {
-  dd_set_tabs(array(l(t('og', '编辑回复'), $_GET['q']), l(t('og', '返回主题'), 'group/node/'.$comment->ext_id)));
-  $form['fields']['redirect'] = og_get_redirect_field();
-}
-
-/**
- * 评论添加表单，回调函数
- * @param (array) $form
- * @param (object) $comment
- */
-function og_get_comment_form_insert(&$form, &$comment) {
+function og_comment_form(&$form, &$comment) {
+  if (!empty($comment->cid)) {
+    dd_set_tabs(array(l(t('og', '编辑回复'), $_GET['q']), l(t('og', '返回主题'), 'group/node/'.$comment->ext_id)));
+  }
   $form['fields']['redirect'] = og_get_redirect_field();
 }
 
