@@ -22,16 +22,15 @@ function og_get_feed_node($oid = NULL) {
     n.created, o.og_name, o.alias, r.name FROM {og} o INNER JOIN {og_node} n ON o.oid = n.oid 
     INNER JOIN {users} r ON n.uid = r.uid WHERE n.node_status > 0 AND o.status = 1 AND o.type > 0 
     ORDER BY n.nid DESC', NULL, array('limit' => 10));
-    
     $link = $base_url;
-    $title = t('og', '最新话题');
+    $title = t('og', '小组最新话题');
   }
   
   if ($fetch) {
     foreach ($fetch as $o) {
       if (!$title) {
         $link = url('group/'.$o->alias, array('absolute' => 1));
-        $title = t('og', '!string 小组的最新话题', array('!string' => $og->og_name));
+        $title = t('og', '小组最新话题_!string', array('!string' => $o->og_name));
       }
       
       $o->path = url('group/node/'.$o->nid, array('absolute' => 1));
@@ -75,7 +74,12 @@ function og_get_feed_comment($oid = NULL, $nid = NULL) {
   $title  = '';
   
   if ($oid) {
-    $og = og_load($oid);
+    if ($og = og_load($oid)) {
+      $title = t('og', '最新评论');
+      $title .= '_' . t('og', '!string', array('!string' => $og->og_name));
+      $link = url($og->alias, array('absolute' => 1));
+    }
+
     if (!og_access_view($og)) {
       return dd_feed_wrapper(t('og', '没有权限访问'), t('og', '没有权限访问'));
     }
@@ -91,6 +95,10 @@ function og_get_feed_comment($oid = NULL, $nid = NULL) {
       return dd_feed_wrapper(t('og', '没有权限访问'), t('og', '没有权限访问'));
     }
     
+    $title = t('og', '最新评论');
+    $link = url('group/node/' . $node->nid, array('absolute' => 1));
+    $title .= '_' . t('og', '!string', array('!string' => $node->title));
+    $title .= '_' . t('og', '!string', array('!string' => $node->og->og_name));
     $fetch = db_query('SELECT c.ext_id, c.created, c.title AS subject, c.name, c.cid, c.body, c.format FROM {comment} c WHERE c.ext_id = ? 
     AND c.ext_type = ? AND c.status > 0 ORDER BY c.created DESC', array($nid, 'og'), array('limit' => 50));
     
@@ -108,17 +116,7 @@ function og_get_feed_comment($oid = NULL, $nid = NULL) {
   if ($fetch) {
     foreach ($fetch as $o) {
       $path = url('group/node/'.$o->ext_id, array('absolute' => 1));
-      
-      if (!$title) {
-        if ($oid) {
-          $title = t('og', '!string 小组的最新评论', array('!string' => $og->og_name));
-          $link = url($og->alias, array('absolute' => 1));
-        } else if ($nid) {
-          $link = $path;
-          $title = t('og', '!string 的最新评论', array('!string' => $node->title));
-        }
-      }
-      
+           
       $info = '<p align="right">';
       
       $info .= dd_imp(array(
@@ -145,6 +143,6 @@ function og_get_feed_comment($oid = NULL, $nid = NULL) {
   } else {
     $items = t('og', '没有数据');
   }
-  
+
   return dd_feed_wrapper($items, $title, $link);
 }

@@ -83,6 +83,19 @@ function og_form($og = NULL) {
     '#weight' => -90,
     '#description' => t('og', '不超过 %string 个字符', array('%string' => var_get_key('og', 'des_max', 1000)))
   );
+ 
+  if (module_exists('editor') && $data = editor_get_info()) {
+    $options = array(t('og', '不使用编辑器'));
+    foreach ($data as $type => $info) {
+      $options[$type] = $info['name'];
+    }
+    $form['fields']['data']['node_editor'] = array(
+      '#type' => 'radio',
+      '#title' => t('og', '文章编辑器'),
+      '#default_value' => !empty($og->data['node_editor']) ? $og->data['node_editor'] : 0,
+      '#options' => $options
+    );
+  }
 
   $form['fields']['data']['alias_name'] = array(
     '#type' => 'textarea',

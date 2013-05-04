@@ -39,11 +39,18 @@
         <a href="<?php echo $og->url?>" class="og_links_join login_msg">加入小组</a>
       <?php }?>
     <?php } ?>
-
     <?php if (!empty($og->links['logout'])) : ?>
       <a href="<?php echo $og->links['logout']?>" class="og_links_logout confirm">退出小组</a>
     <?php endif ?>
+
+    <?php if (!empty($og->feed_og_url)) : ?>
+      <a href="<?php echo $og->feed_og_url?>" title="订阅<?php echo $og->og_name;?>的最新话题">订阅话题</a>
+    <?php endif ?>
     
+    <?php if (!empty($og->feed_comment_url)) : ?>
+      <a href="<?php echo $og->feed_comment_url?>" title="订阅<?php echo $og->og_name;?>的最新评论">订阅评论</a>
+      <?php endif ?>
+
     <?php if ($og->links['admin']): ?>
       <a href="<?php echo $og->links['admin']?>" class="og_links_admin">管理小组</a>
     <?php endif?>

@@ -64,7 +64,16 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
     '#ajax_validate' => 1,
   );
     
-  if ($types[$node->node_type]['default_form']) {
+  global $editor_disabled, $editor_alter_config;
+  
+  if (!empty($node->og->data['node_editor'])) {
+    $editor_alter_config['og_node']['name'] = $node->og->data['node_editor'];
+  } else {
+    // 禁用编辑器
+    $editor_disabled['og_node'] = true;
+  }
+ 
+  if (!empty($types[$node->node_type]['default_form'])) {
     $form['fields']['title'] = array(
       '#title' => t('og', '标题'),
       '#type' => 'textfield',
@@ -81,32 +90,6 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
       '#required' => 1,
       '#attributes' => array('cols' => 60, 'rows' => 10)  
     );
-   
-    global $form_tokens;
-  
-    $file_url = url('files/editor', array('query' => 'op=markitup&name=upload&type=image&image_size=800x600'));
-
-    if (!empty($node->nid)) {
-      $file_url .= '&ext_type=og_node&ext_id2=' . $node->oid . '&ext_id=' . $node->nid;
-    } else {
-      // 内容提交保存时，以 $form_token 做为关联条件
-      $file_url .= '&status=-1&ext_type=' . $form_tokens['og_node_form'];
-    }
-      
-    if (var_get_key('og', 'node_editor', 1) == 1) {
-      dd_get_editor_text('#og_node_form_type_body', 'html', array(
-        'upload' => true,
-        'filebrowserImageUploadUrl' => $file_url,
-        'upload_image' => true,
-      ));
-    } else if (var_get_key('og', 'node_editor', 1) == 2) {
-      dd_get_editor('og_node_form_type_body', array(
-        'toolbar' => 'medium',
-        'upload_image' => 1,
-        'filebrowserImageUploadUrl' => str_replace('markitup', 'ckeditor', $file_url),
-        'height' => 200, 
-      ));
-    }
     
     $form['fields']['format'] = filter_form_field($node->format);
     
@@ -139,6 +122,7 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
 
   module_alter_all('og_node_form', $form, $node);
   
+  dd_add_css(dd_get_path('module', 'og') . '/og.css');
   dd_set_title(array($title));
   dd_set_breadcrumb(array(l(t('og', '我的小组'), $user->path.'/group'), l($node->og->og_name, 'group/'.$node->og->alias), $title));
   return $form;
@@ -154,11 +138,9 @@ function og_node_form_submit(&$form, &$v) {
       $form['settings']['#redirect'] = og_get_redirect_path($v['_dida_values']->redirect, $node);
     }
 
-    if (empty($v['_dida_values']->_db_write_record_is_update)) {
-      // 新增时，将从编辑器上传的图片，关联到话题
-      db_exec('UPDATE {files} SET ext_type = ?, ext_id = ?, ext_id2 = ?, status = 1 
-      WHERE ext_type = ?', array('og_node', $node->nid, $node->oid, $form['#form_token']));
-    }
+    // 将从编辑器上传的图片，关联到话题
+    db_exec('UPDATE {files} SET ext_type = ?, ext_id = ?, ext_id2 = ?, status = 1 
+    WHERE ext_type = ?', array('og_node', $node->nid, $node->oid, $form['#form_token']));
  
     dd_set_message(t('og', '操作成功'));
   } else {

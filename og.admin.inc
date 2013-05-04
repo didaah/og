@@ -333,20 +333,6 @@ function og_admin_settings() {
     '#description' => t('og', '禁止使用的别名，多个以半角空格分隔，如：admin config')
   );
   
-  $form['fields']['og']['node_editor'] = array(
-    '#type' => 'radio',
-    '#title' => t('og', '文章编辑器'),
-    '#default_value' => var_get_key('og', 'node_editor', 1),
-    '#options' => array(0 => '不启用编辑器', 1 => '文本编辑器', 2 => '可视化编辑器')
-  );
-  
-  $form['fields']['og']['comment_editor'] = array(
-    '#type' => 'radio',
-    '#title' => t('og', '评论编辑器'),
-    '#default_value' => var_get_key('og', 'comment_editor', 1),
-    '#options' => array(0 => '不启用编辑器', 1 => '文本编辑器', 2 => '可视化编辑器')
-  );
-  
   if ($roles = user_roles_opt()) {
     $limit = var_get_key('og', 'role_limit');
     

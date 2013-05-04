@@ -198,7 +198,7 @@ function og_menu() {
  */
 function og_perm() {
   return array(
-    'og add' => '创建小组 ',
+    'og add' => '创建小组',
     'og view' => '浏览小组',
     'admin og' => '管理小组',
     'admin og status' => '审核小组',
@@ -213,12 +213,12 @@ function og_perm() {
  */
 function og_system_admin_menus() {
   return array(array(
-    array('小组列表', 'admin/og'),
-    array('小组审核', 'admin/og/status'),
-    array('话题管理', 'admin/og/node'),
-    array('话题字段', 'admin/og/node/fields'),
-    array('小组设置', 'admin/og/settings'),
-  ), '小组管理');
+    array(t('og', '小组列表'), 'admin/og'),
+    array(t('og', '小组审核'), 'admin/og/status'),
+    array(t('og', '话题管理'), 'admin/og/node'),
+    array(t('og', '话题字段'), 'admin/og/node/fields'),
+    array(t('og', '小组设置'), 'admin/og/settings'),
+  ), t('og', '小组管理'));
 }
 
 /**
@@ -1242,7 +1242,7 @@ function og_comment_is_view($comment) {
     if (!isset($data[$comment->ext_id])) {
       $data[$comment->ext_id] = og_access_comment_view($comment->ext_id);
     }
-    $comment->is_create = $data[$comment->ext_id];
+    $comment->is_view = $data[$comment->ext_id];
   }
 }
 
@@ -1250,10 +1250,12 @@ function og_comment_is_view($comment) {
  * @Implement of hook_comment_form()
  */
 function og_comment_form(&$form, &$comment) {
-  if (!empty($comment->cid)) {
-    dd_set_tabs(array(l(t('og', '编辑回复'), $_GET['q']), l(t('og', '返回主题'), 'group/node/'.$comment->ext_id)));
+  if ($comment->ext_type == 'og') {
+    if (!empty($comment->cid)) {
+      dd_set_tabs(array(l(t('og', '编辑回复'), $_GET['q']), l(t('og', '返回主题'), 'group/node/'.$comment->ext_id)));
+    }
+    $form['fields']['redirect'] = og_get_redirect_field();
   }
-  $form['fields']['redirect'] = og_get_redirect_field();
 }
 
 /**
@@ -1839,6 +1841,28 @@ function og_get_access_user_type() {
     'anonymous' => t('og', '游客'),
     'user' => t('og', '非成员'),
     'og_user' => t('og', '组内成员'),
+  );
+}
+
+/**
+ * @Implement of hook_editor_info()
+ */
+function og_editor_info() {
+  return array(
+    'og_node' => array(
+      'name' => t('og', '小组话题'),
+      'status' => 1,
+      'data' => array(
+        'dom' => 'og_node_form_type_body',
+        'form_id' => 'og_node_form',
+        'form_field_name' => 'body',
+        'files' => array(
+          '#validate' => array(
+            'status' => 0,
+          )
+        ),
+      )
+    )
   );
 }
 
