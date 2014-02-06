@@ -73,6 +73,7 @@ table.og_settings_users th,
 
 .og_info_content{
 	margin: 5px;
+	float: left;
 }
 
 .og_info_link, .og_node_view_links, .og_node_comment_links{
