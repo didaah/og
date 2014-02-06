@@ -60,7 +60,7 @@
 
 <?php 
   if (count($og->tabs) > 1) {
-    echo theme('item_list', $og->tabs, NULL, 'ul', array('class' => 'tabs'));
+    echo theme('item_list', $og->tabs, NULL, 'ul', array('class' => 'tabs nav nav-tabs'));
   }
 ?>
 
