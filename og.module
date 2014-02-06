@@ -1566,6 +1566,24 @@ function og_field_call_group($type = NULL) {
 }
 
 /**
+ * @Implement of hook_field_term_view()
+ */
+function og_field_term_view($term) {
+  if ($term->field->module == 'og' && substr($term->field->type, 0, 8) == 'ext_node') {
+    dd_goto('group/' . str_replace('ext_node_', '', $term->field->type));
+  }
+}
+
+/**
+ * @Implement of hook_field_field_view()
+ */
+function og_field_field_view($term) {
+  if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
+    dd_goto('group/' . str_replace('ext_node_', '', $field->type));
+  }
+}
+
+/**
  * @Implement of hook_field_node_view()
  */
 function og_field_node_view($field, $node, $view_type, &$content) {
@@ -1606,7 +1624,6 @@ function og_field_call_form($field, &$form) {
  * @Implement of hook_field_call_validate()
  */
 function og_field_call_validate($field) {
-
   if ($field->module == 'og' && substr($field->type, 0, 8) == 'ext_node') {
     // 给字段索引加上统一前缀
     if (substr($field->field_key, 0, 4) != 'ext_') {
@@ -1630,7 +1647,6 @@ function og_field_call_save($field) {
     } else {
       db_exec('UPDATE {og} SET field_id = 0 WHERE oid = ? AND field_id = ?', array($oid, $field->field_id));
     }
-
   }
 }
 
