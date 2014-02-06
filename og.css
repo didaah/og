@@ -10,13 +10,18 @@ td.og_admin_td_title, .og_node_list_title{
 }
 
 /*form*/
-#og_form_type span.form_radio_field, #og_form_type span.description,
-#og_update_form_type span.form_radio_field, #og_update_form_type span.description{
+#og_form_type span.description,
+#og_update_form_type span.description {
 	display: block;
-	margin: 5px 0 5px 60px;
+	margin: 5px 0 5px 76px;
 }
 
-.og_user_table{
+table.og_settings_nodes td,
+table.og_settings_users td,
+table.og_settings_nodes th,
+table.og_settings_users th,
+.og_user_table th,
+.og_user_table td {
 	text-align: center;
 }
 
@@ -158,23 +163,19 @@ td.og_admin_td_title, .og_node_list_title{
 	margin: 6px 0;
 }
 
-#og_update_logo_image ul{
+#og_update_logo_image ul {
 	clear: both;
 	overflow: hidden;
 }
 
-#og_update_logo_image ul li{
+#og_update_logo_image ul li {
 	float: left;
 	margin: 2px;
 }
 
-#og_update_logo_image ul li img{
+#og_update_logo_image ul li img {
 	padding: 3px;
 	border: 1px solid #ccc;
-}
-
-.og_settings_nodes td, .og_settings_users td{
-	text-align: center;
 }
 
 .og_settings_nodes td.og_settings_nodes_title{
@@ -199,6 +200,10 @@ td.og_admin_td_title, .og_node_list_title{
   color:#898989;
 }
 
+.og_node_list_table th {
+  text-align: center;
+}
+
 #og_node_list_table_user_comment .og_node_list_title, #og_node_list_table_user_node .og_node_list_title {
   width: 300px;
 }
@@ -209,21 +214,14 @@ td.og_admin_td_title, .og_node_list_title{
   margin: 0;
 }
 
-.block_module_og .item-list li a
-{
+.block_module_og .item-list li a {
 	display: block;
 	padding: 5px 0;
-	border-bottom: 1px solid #ccc;
-}
-
-.block_module_og .item-list li a:hover {
-  background: #F5FAF2;
 }
 
 #block_og_user_avatar .item-list li {
 	padding: 5px 0;
 	text-align: center;
-	border-bottom: 1px solid #ccc;
 }
 
 #block_og_user_avatar .item-list li a {

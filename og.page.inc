@@ -655,7 +655,7 @@ function og_logout($og) {
       dd_log('og', t('og', '退出小组'), $og->oid, $og->path, 0, $user->uid);
       dd_set_message(t('og', '成功退出 %string 小组', array('%string' => $og->og_name)));
       og_set_user_count($og->oid);
-      dd_goto($user->path);
+      dd_goto($user->path . '/group');
     }
   }
   

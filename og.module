@@ -1566,6 +1566,22 @@ function og_field_call_group($type = NULL) {
 }
 
 /**
+ * @Implement of hook_field_node_view()
+ */
+function og_field_node_view($field, $node, $view_type, &$content) {
+  if ($field->module == 'og' && in_array($field->field_type, field_get_term_type()) && !empty($node->fields[$field->field_key])) {
+    if (is_array($node->fields[$field->field_key])) {
+      $content['#content'] = '';
+      foreach ($node->fields[$field->field_key] as $term) {
+        $content['#content'] .= l($term->name, $node->og->path . '/term/' . $term->tid);
+      }
+    } else {
+      $content['#content'] = l($node->fields[$field->field_key]->name, $node->og->path . '/term/' . $node->fields[$field->field_key]->tid);
+    }
+  }
+}
+
+/**
  * @Implement of hook_field_call_save()
  */
 function og_field_call_form($field, &$form) {
