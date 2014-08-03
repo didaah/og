@@ -472,7 +472,9 @@ function og_access_node_view($node) {
 }
 
 /**
- * 验证当有用户是否有当前小组内容创建权限
+ * 验证当有用户是否有当前小组内容创建权限，其它模块可通过 hook_og_access_node_create() 修改权限，如：
+ *  将 $og->is_node_create 赋值为 true，则有权限
+ *  将 $og->is_node_create 赋值为 false，则无权限
  * @param (object) $og
  *  小组对象
  * @param (string) $type
@@ -480,7 +482,7 @@ function og_access_node_view($node) {
  */
 function og_access_node_create($og, $type = 'topic') {
   if (empty($og->oid)) return false;
-
+  
   if ($og->status == -1) {
     dd_set_message(t('og', '小组被屏蔽，暂时无法发言'));
     return false;
@@ -493,19 +495,23 @@ function og_access_node_create($og, $type = 'topic') {
 
   global $user;
 
+  $og->is_node_create = false;
+
   // 私密小组，忽略其它权限设置，只允许组内成员发布内容
   if ($og->type == 0) {
-    return !empty($user->uid) && og_is_group_user($user->uid, $og);
+    $og->is_node_create =  !empty($user->uid) && og_is_group_user($user->uid, $og);
   }
 
   // 按用户组验证权限
   if (!empty($og->access['node'])) {
-    return (empty($user->uid) && $og->access['node']['anonymous'] == 3) 
+    $og->is_node_create = (empty($user->uid) && $og->access['node']['anonymous'] == 3) 
       || (!empty($user->uid) && $og->access['node']['user'] == 3)
       || ($og->access['node']['og_user'] == 3 && og_is_group_user($user->uid, $og));
   }
  
-  return false;
+  module_invoke_all('og_access_node_create', $og, $type);
+
+  return $og->is_node_create;
 }
 
 /**

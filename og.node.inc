@@ -25,7 +25,7 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
     $node->node_type = $node_type;
   }
 
-  $types = og_og_node_info();
+  $types = module_invoke_all('og_node_info');
   
   if (!$types[$node->node_type]) {
     echo dd_get_access();
