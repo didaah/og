@@ -3,7 +3,7 @@
 ?>
 
 <h1 class="og_title"><?php echo $node->title?></h1>
-<div id="og_node_content_<?php echo $node->nid?>">
+<div id="og_node_content_<?php echo $node->nid?>" class="og_node_content og_node_content_parent_<?php echo $node->oid;?>">
   <div class="og_node_view_node">
     <div class="og_node_view_content">
 

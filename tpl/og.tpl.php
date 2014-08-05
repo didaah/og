@@ -23,14 +23,18 @@
     </strong>名成员</span>
     
     <?php if ($og->node_count): ?>
-      <span class="og_info_link_node_count">，<strong><?php echo $og->node_count ?></strong>个话题</span>
+      <span class="og_info_link_node_count">，<strong><?php echo $og->node_count ?></strong> 个主题</span>
     <?php endif?>
     
-    <?php if (!empty($og->links['addtopic'])) { ?>
-      <a href="<?php echo $og->links['addtopic']?>" class="og_links_add_topic">我要发言</a>
-    <?php } else {?>
-      <a href="<?php echo $og->url?>" title="请先加入小组" class="og_links_add_topic confirm_msg">我要发言</a>
-    <?php }?>
+    <?php
+      if (!empty($og->links['add'])) {
+        foreach ($og->links['add'] as $key => $info) {
+          echo '<a href="' . $info['url'] . '" class="og_links_add og_links_add_' . $key . '">' . $info['title'] . '</a>';
+        }
+      } else {
+        echo '<a href="' . $og->url . '" title="请先加入小组" class="og_links_add_topic confirm_msg">我要发言</a>';
+      }
+    ?>
 
     <?php if (!$og->is_user) { ?>
       <?php if (!empty($og->links['join'])) {?>

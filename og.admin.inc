@@ -159,7 +159,7 @@ function og_admin_node() {
     foreach ($fetch as $o) {
       $table[] = array(
         array(
-          'data' => ($o->node_status ? l($o->title, 'group/node/'.$o->nid) : $o->title),
+          'data' => l($o->title, 'group/node/'.$o->nid),
           'class' => 'og_admin_td_title'
         ),
         l($o->og_name, 'group/'.$o->alias),
@@ -281,7 +281,7 @@ function og_admin_settings() {
     '#options' => array(t('og', '不允许解散'), t('og', '允许解散')),
     '#required' => 1,
     '#default_value' => var_get_key('og', 'delete', 0),
-    '#description' => t('og', '是否允许小组管理员解散小组，解散即删除，不可恢复')
+    '#description' => t('og', '是否允许组长解散小组，解散即删除，不可恢复')
   );
   
   $form['fields']['og']['ping'] = array(
@@ -291,6 +291,15 @@ function og_admin_settings() {
     '#required' => 1,
     '#default_value' => var_get_key('og', 'ping', 1),
     '#description' => t('og', '如有新增内容，通知更新服务器')
+  );
+   
+  $form['fields']['og']['node_status'] = array(
+    '#type' => 'radio',
+    '#title' => t('og', '主题审核'),
+    '#options' => array(t('og', '否'), t('og', '是')),
+    '#required' => 1,
+    '#default_value' => var_get_key('og', 'node_status', 0),
+    '#description' => t('og', '游客发布主题时需要审核')
   );
   
   $form['fields']['og']['default_logo'] = array(
@@ -308,6 +317,15 @@ function og_admin_settings() {
     '#default_value' => var_get_key('og', 'name_max', 128),
     '#description' => t('og', '小组名称最大长度，只能是数字，不超过 128')
   );
+   
+  $form['fields']['og']['name_update'] = array(
+    '#type' => 'radio',
+    '#title' => t('og', '名称修改'),
+    '#options' => array(t('og', '不允许修改'), t('og', '允许修改')),
+    '#required' => 1,
+    '#default_value' => var_get_key('og', 'name_update', 0),
+    '#description' => t('og', '是否允许组长多次修改小组的名称')
+  );
   
   $form['fields']['og']['des_max'] = array(
     '#type' => 'textfield',
@@ -323,7 +341,7 @@ function og_admin_settings() {
     '#options' => array(t('og', '不允许修改'), t('og', '允许修改')),
     '#required' => 1,
     '#default_value' => var_get_key('og', 'alias_update', 1),
-    '#description' => t('og', '是否允许小组管理员多次修改小组的别名')
+    '#description' => t('og', '是否允许组长多次修改小组的别名')
   );
   
   $form['fields']['og']['alias_disable'] = array(
@@ -331,6 +349,24 @@ function og_admin_settings() {
     '#title' => t('og', '禁用别名'),
     '#default_value' => var_get_key('og', 'alias_disable'),
     '#description' => t('og', '禁止使用的别名，多个以半角空格分隔，如：admin config')
+  );
+   
+  $form['fields']['og']['field_admin'] = array(
+    '#type' => 'radio',
+    '#title' => t('og', '字段管理'),
+    '#options' => array(t('og', '不允许'), t('og', '允许')),
+    '#required' => 1,
+    '#default_value' => var_get_key('og', 'field_admin', 0),
+    '#description' => t('og', '是否允许组长管理字段')
+  );
+    
+  $form['fields']['og']['admin_user'] = array(
+    '#type' => 'radio',
+    '#title' => t('og', '增加助手'),
+    '#options' => array(t('og', '不允许'), t('og', '允许')),
+    '#required' => 1,
+    '#default_value' => var_get_key('og', 'admin_user', 0),
+    '#description' => t('og', '是否允许组长增加或取消副组长')
   );
   
   if ($roles = user_roles_opt()) {

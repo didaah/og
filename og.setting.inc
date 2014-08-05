@@ -1,14 +1,31 @@
 <?php
 // $Id$
 
+// public og_update($og) {{{ 
+/**
+ * og_update
+ *  小组设置
+ * 
+ * @param mixed $og 
+ * @access public
+ * @return void
+ */
 function og_update($og) {
+  global $user;
   
   if (!empty($og->data['user_wait_status'])) {
     dd_set_help(t('og', '有%a个加入请求等待处理，<a href="!url">立即处理</a>',
     array('%a' => $og->data['user_wait_status'], '!url' => url($og->path . '/settings/user/wait', array('query' => 'status=0')))));
   }
+
+  $args = arg();
+
+  if (!empty($args[3]) && !in_array($args[3], array('node', 'user')) && $user->uid != $og->uid && !user_access('admin og')) {
+    dd_set_message(t('og', '你所请求的管理功能只有组长才能够使用，请联系组长'));
+    dd_goto($og->path . '/settings');
+  }
   
-  switch (arg(3)) {
+  switch ($args[3]) {
     case 'node':
       $output = og_settings_nodes($og);
     break;
@@ -52,25 +69,27 @@ function og_update($og) {
   }
   
   dd_set_breadcrumb(array(
-    l(t('og', '我的小组'), $GLOBALS['user']->path.'/group'),
+    l(t('og', '我的小组'), $user->path . '/group'),
     l($og->og_name, $og->path),
     t('og', '小组管理')
   ));
   
-  dd_set_tabs(array(
-    l(t('og', '小组日志'), $og->path.'/settings'),
-    l(t('og', '基本设置'), $og->path.'/settings/edit'),
-    l(t('og', '成员管理'), $og->path.'/settings/user'),
-    l(t('og', '内容管理'), $og->path.'/settings/node'),
-    l(t('og', '内容字段'), $og->path.'/settings/field'),
-    l(t('og', '小组图标'), $og->path.'/settings/logo'),
-    l(t('og', '别名设置'), $og->path.'/settings/alias'),
-    l(t('og', '返回小组首页'), $og->path),
-  ));
-  
+  // @TODO 权限问题待解决
+  $tabs = array(l(t('og', '小组日志'), $og->path . '/settings'));
+  $tabs[] = l(t('og', '基本设置'), $og->path . '/settings/edit');
+  $tabs[] = l(t('og', '成员管理'), $og->path . '/settings/user');
+  $tabs[] = l(t('og', '内容管理'), $og->path . '/settings/node');
+  $tabs[] = l(t('og', '内容字段'), $og->path . '/settings/field');
+  $tabs[] = l(t('og', '小组图标'), $og->path . '/settings/logo');
+  $tabs[] = l(t('og', '别名设置'), $og->path . '/settings/alias');
+  $tabs[] = l(t('og', '返回小组首页'), $og->path);
+
+  dd_set_tabs($tabs);
   dd_add_css(dd_get_path('module', 'og').'/og.css');
+
   return $output;
 }
+// }}}
 
 /**
  * 小组logo

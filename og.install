@@ -1,5 +1,31 @@
 <?php
 // $Id$
+
+/**
+ * @Implement of hook_update_x()
+ */
+function og_update_13() {
+  /**
+   * 为 og_node 表添加 ext_id 字段
+   */
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => '扩展 id',
+  );
+  
+  $ret[] = db_add_field('og_node', 'ext_id', $field);
+  
+  $ret[] = db_add_index('og_node', 'ext_id', array('ext_id'));
+  $ret[] = db_add_index('og_node', 'uc', array('uid', 'created'));
+  $ret[] = db_add_index('og_node', 'uu', array('uid', 'updated'));
+  $ret[] = db_drop_index('og_node', 'uid');
+
+  return $ret;
+}
+
 /**
  * @Implement of hook_update_x()
  */
@@ -257,7 +283,7 @@ function og_schema() {
         'unsigned' => TRUE,
         'default' => 1,
         'size' => 'tiny',
-        'description' => '0、回收站，1、正常，2：禁止回复',
+        'description' => '0、回收站或待审核，1、正常，2：禁止回复',
       ),
       'top' => array(
         'type' => 'int',
@@ -315,6 +341,13 @@ function og_schema() {
         'size' => 'big',
         'description' => '正文'
       ),
+      'ext_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '扩展 id',
+      ),
     ),
     'foreign keys' => array(
       'oid' => array(
@@ -327,7 +360,9 @@ function og_schema() {
     'indexes' => array(
       'osue' => array('oid', 'node_status', 'updated', array('node_type', 1)),
       'osut' => array('oid', 'node_status', 'updated', 'top'),
-      'uid' => array('uid'),
+      'ext_id' => array('ext_id'),
+      'uc' => array('uid', 'created'),
+      'uu' => array('uid', 'updated'),
     ),
     'primary key' => array('nid'),
   );

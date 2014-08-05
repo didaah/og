@@ -85,13 +85,13 @@ function og_form($og = NULL) {
   );
  
   if (module_exists('editor') && $data = editor_get_info()) {
-    $options = array(t('og', '不使用编辑器'));
-    foreach ($data as $type => $info) {
-      $options[$type] = $info['name'];
-    }
+    $options = array(t('og', '不启用编辑器'), t('og', '启用编辑器'));
+    //foreach ($data as $type => $info) {
+    //  $options[$type] = $info['name'];
+    //}
     $form['fields']['data']['node_editor'] = array(
       '#type' => 'radio',
-      '#title' => t('og', '文章编辑器'),
+      '#title' => t('og', '编辑工具'),
       '#default_value' => !empty($og->data['node_editor']) ? $og->data['node_editor'] : 0,
       '#options' => $options
     );

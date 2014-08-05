@@ -488,6 +488,10 @@ function og_node_view($node) {
       $node->is_recycle = true;
     }
   }
+  
+  if ($node->node_status == 0) {
+    dd_set_help(t('og', '该主题处于回收站，只有管理人员能够浏览'));
+  }
 
   if ($node->node_status == 1) {
     if (og_access_comment_create($node->nid)) {
@@ -508,9 +512,7 @@ function og_node_view($node) {
   }
   
   if ($node->comment_count) {
-    
     $node->comment_pager = '';
-
     if (og_access_comment_view($node->nid)) {
       if ($data = comment_ext_view('og', $node->nid, var_get('og_comment_page_count', 20), true)) {
         $node->comment_view = $data->view;
@@ -684,13 +686,15 @@ function og_view_user($og) {
 
   $og->content = '';
 
-  if ($fetch = pager_query('SELECT o.uid, u.name FROM {og_user} o INNER JOIN {users} u ON o.uid = u.uid 
+  if ($fetch = pager_query('SELECT o.uid, u.name, o.rid FROM {og_user} o INNER JOIN {users} u ON o.uid = u.uid 
   WHERE o.oid = ? AND o.user_status = 1 ORDER BY o.timestamp DESC', 20, 0, NULL, array($og->oid))) {
     foreach ($fetch as $o) {
       $data = img(user_get_avatar($o->uid, '85x85'), $o->name);
       $data .= theme('username', $o);
       if ($og->uid == $o->uid) {
         $data .= '<span class="red">('.t('og', '组长').')</span>';
+      } else if ($o->rid == -1) {
+        $data .= '<span class="red">('.t('og', '副组长').')</span>';
       }
       $item[] = $data;
     }
