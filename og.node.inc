@@ -138,8 +138,7 @@ function og_node_form_validate(&$form, &$v) {
 
 function og_node_form_submit(&$form, &$v) {
   if ($node = og_node_save($v['_dida_values'], false)) {
-    
-    if (empty($user->uid) && !var_get_key('og', 'node_status', 0)) {
+    if (empty($node->uid) && !var_get_key('og', 'node_status', 0)) {
       $og = og_load($node->oid);
       $form['settings']['#redirect'] = url('group/' . $og->alias);
       dd_set_message(t('og', '操作成功，请等待审核'));
