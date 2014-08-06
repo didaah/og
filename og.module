@@ -1836,9 +1836,9 @@ function og_node_list_default($fetch, $header = NULL, $og_name = true, $user_nam
         } else {
           $query = NULL;
         }
-        $last_info = t('og', '!user 于 !time 前', array( 
-          '!user' => l($o->data['last_username'], 'group/node/'.$o->nid,
-          array('query' => $query, 'fragment' => 'comment_og_'.$o->data['last_cid'])),
+        $last_info = t('og', '!user <br/>于 !time 前', array( 
+          '!user' => l($o->data['last_username'], 'group/node/' . $o->nid,
+          array('query' => $query, 'fragment' => 'comment_og_' . $o->data['last_cid'])),
           '!time' => format_interval($_SERVER['REQUEST_TIME']-$o->updated, 3)
         ));
       }
