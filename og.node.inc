@@ -25,7 +25,7 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
     $node->node_type = $node_type;
   }
 
-  if (empty($user->uid) && !var_get_key('og', 'node_status', 0)) {
+  if (empty($user->uid) && var_get_key('og', 'node_status', 0)) {
     dd_set_help(t('og', '你没有登录，发布的内容需通过审核才能显示'));
   }
 
