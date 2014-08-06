@@ -630,6 +630,10 @@ function og_view($og, $op = 'page') {
     } else {
       $og->links['admin'] = url($og->path . '/settings'); // 若为创建人，管理链接
     }
+
+    if (user_access('admin og')) {
+      $og->links['admin'] = url($og->path . '/settings'); // 管理员
+    }
   } else if ($user->uid) {
     $og->links['join'] = url($og->path . '/join'); // 非成员，加入链接
   }
