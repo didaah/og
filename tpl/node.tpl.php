@@ -10,13 +10,7 @@
       <div class="og_node_view_header">
         <p>
         <span class="og_node_view_header_name">
-          <?php 
-            if (!empty($node->uid)) {
-              echo theme('username', $node);
-            } else {
-              echo dd_get_ip($node->data['insert_host'], 1, 0);
-            }
-          ?>
+          <?php echo theme('username', $node);?>
         </span>
         <span class="og_node_view_header_time"><?php echo t('og', '发布于 !time', array('!time' => format_date($node->created)))?></span>
         </p>
