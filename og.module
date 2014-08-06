@@ -671,11 +671,11 @@ function og_view($og, $op = 'page') {
     }
 
     $header = array(
-      t('og', '标题'),
-      t('og', '作者'),
-      t('og', '创建时间'),
-      t('og', '回应'),
-      t('og', '更新时间'),
+      array('data' => t('og', '标题'), 'class' => 'og_node_list_table_th_title'),
+      array('data' => t('og', '作者'), 'class' => 'og_node_list_table_th_name'),
+      array('data' => t('og', '创建时间'), 'class' => 'og_node_list_table_th_created'),
+      array('data' => t('og', '回应'), 'class' => 'og_node_list_table_th_comment'),
+      array('data' => t('og', '更新时间'), 'class' => 'og_node_list_table_th_updated'),
     );
     
     if ($user->uid > 0) {
