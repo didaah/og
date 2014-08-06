@@ -933,11 +933,11 @@ function og_node_save(&$node, $validate = true, &$error = NULL) {
       module_invoke_all('og_node_save', $node);
     }
   } else {
-    $node->data['insert_host'] = ip_address();
+    if (empty($node->data['insert_host'])) $node->data['insert_host'] = ip_address();
     if (empty($node->created)) $node->created = $node->updated;
     $node->is_op = 'insert';
     
-    if (!isset($node->node_status )) {
+    if (!isset($node->node_status)) {
       if (empty($node->uid) && !var_get_key('og', 'node_status', 0)) {
         $node->node_status = 0;
       } else {
