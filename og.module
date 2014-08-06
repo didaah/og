@@ -938,7 +938,7 @@ function og_node_save(&$node, $validate = true, &$error = NULL) {
     $node->is_op = 'insert';
     
     if (!isset($node->node_status)) {
-      if (empty($node->uid) && !var_get_key('og', 'node_status', 0)) {
+      if (empty($node->uid) && var_get_key('og', 'node_status', 0)) {
         $node->node_status = 0;
       } else {
         $node->node_status = 1;
