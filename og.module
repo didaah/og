@@ -1184,8 +1184,9 @@ function og_comment_is_update($comment) {
      * 只能编辑自己的正常评论
      */
     if ($node = og_node_load($comment->ext_id)) {
-      $comment->is_update = og_access_node_view($node) && $comment->status == 1 
-        && $GLOBALS['user']->uid == $comment->uid;
+      //$comment->is_update = og_access_node_view($node) && $comment->status == 1 
+      //$comment->is_update = og_access_node_view($node) && $comment->status == 1 
+      //  && $GLOBALS['user']->uid == $comment->uid;
     }
   }
 }
