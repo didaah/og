@@ -39,18 +39,19 @@ function og_user_view($ac) {
     t('og', '操作')
   );
   
-  // 自己可以查看私密、待审核小组
   if ($user->uid == $ac->uid) {
+    // 自己可以查看私密、待审核小组
     $fetch = pager_query('SELECT o.uid, o.oid, o.alias, o.og_name, o.status, o.type, o.logo, o.node_count,
     o.created, o.user_count, i.name, u.user_status, u.rid FROM {og} o INNER JOIN {og_user} u ON o.oid = u.oid 
     INNER JOIN {users} i ON o.uid = i.uid WHERE u.uid = ? AND u.user_status != -1'
-    .table_sql($header), 20, 0, NULL, array($user->uid));
+    . table_sql($header), 20, 0, NULL, array($user->uid));
     
-  } else { // 其它人，只可查看公开、正常小组
+  } else { 
+    // 其它人，只可查看公开、正常小组
     $fetch = pager_query('SELECT o.uid, o.oid, o.alias, o.status, o.og_name, o.logo, o.node_count,
     o.created, o.user_count, o.uid, i.name FROM {og} o INNER JOIN {og_user} u ON o.oid = u.oid INNER JOIN 
     {users} i ON o.uid = i.uid WHERE o.status = 1 AND o.type > 0 AND u.uid = ? AND u.user_status = 1'
-    .table_sql($header), 20, 0, NULL, array($ac->uid));
+    . table_sql($header), 20, 0, NULL, array($ac->uid));
   }
   
   if ($fetch) {
@@ -251,22 +252,17 @@ function og_user_node($ac) {
     dd_set_tabs(array(l(t('og', '创建小组'), 'group/add')));
   }
   
-  // 自己可以查看已加入的公开、秘密小组的所有正常(status > 0)话题，以及自己发布的所有话题
   if ($user->uid == $ac->uid) {
-    
+    // 自己可以查看已加入的公开、秘密小组的所有正常(status > 0)话题，以及自己发布的所有话题
     $fetch = pager_query('SELECT n.data, n.title, n.nid, n.comment_count, n.node_status, n.uid, n.updated,
-    n.created, o.og_name, o.alias FROM {og} o INNER JOIN {og_user} u ON o.oid = u.oid 
-    INNER JOIN {og_node} n ON o.oid = n.oid WHERE o.status = 1 AND u.uid = ? AND u.user_status != -1 AND 
-    n.uid = ? AND n.node_status > 0' .table_sql($header), 20, 0, NULL, array($ac->uid, $ac->uid));
-    
-  } else { // 其它人只可查看当前用户在非秘密小组发表的公共(status > 0)话题
-    
+    n.created, o.og_name, o.alias FROM {og} o
+    INNER JOIN {og_node} n ON o.oid = n.oid WHERE n.uid = ?' .table_sql($header), 20, 0, NULL, array($ac->uid));
+  } else {
+    // 其它人只可查看当前用户在非秘密小组发表的公共(status > 0)话题
     $fetch = pager_query('SELECT n.data, n.title, n.nid, n.comment_count, n.node_status, n.uid, n.updated,
-    n.created, o.og_name, o.alias FROM {og} o INNER JOIN {og_user} u ON o.oid = u.oid 
-    INNER JOIN {og_node} n ON o.oid = n.oid WHERE u.uid = ? AND n.uid = ? AND u.user_status != -1 AND 
-    n.node_status > 0 AND o.status = 1 AND o.type > 0' 
-    .table_sql($header), 20, 0, NULL, array($ac->uid, $ac->uid));
-    
+    n.created, o.og_name, o.alias FROM {og} o INNER JOIN {og_node} n ON o.oid = n.oid WHERE n.uid = ? 
+    AND n.node_status > 0 AND o.status = 1 AND o.type > 0' 
+    . table_sql($header), 20, 0, NULL, array($ac->uid));
   }
   
   if ($fetch) {
