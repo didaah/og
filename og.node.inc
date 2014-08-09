@@ -47,21 +47,25 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
     '#default_value' => $node->node_type,
     '#constant' => 1
   );
+
   $form['fields']['nid'] = array(
     '#type' => 'hidden',
     '#default_value' => $node->nid,
     '#constant' => 1
   );
+
   $form['fields']['oid'] = array(
     '#type' => 'hidden',
     '#default_value' => $node->og->oid,
     '#constant' => 1
   );
+
   $form['fields']['uid'] = array(
     '#type' => 'hidden',
-    '#default_value' => $GLOBALS['user']->uid,
+    '#default_value' => !empty($node) ? $node->uid : $user->uid,
     '#constant' => 1
   );
+
   $form['settings'] = array(
     '#values_object' => true,
     '#validate' => array('og_node_form_validate'),
