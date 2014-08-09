@@ -537,11 +537,13 @@ function og_access_node_create($og, $type = 'topic') {
  * @param (object) $node
  */
 function og_access_node_update($node) {
+  global $user;
   /**
+   * 超级管理员可以编辑文章
    * 小组管理员不能编辑成员的文章
    * 已被小组管理员放到回收站的文章作者不能编辑
    */
-  return $node->node_status > 0 && $GLOBALS['user']->uid && $node->uid == $GLOBALS['user']->uid;
+  return $user->uid == 1 || ($node->node_status > 0 && !empty($user->uid) && $node->uid == $user->uid);
 }
 
 /**
