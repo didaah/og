@@ -62,7 +62,7 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
 
   $form['fields']['uid'] = array(
     '#type' => 'hidden',
-    '#default_value' => !empty($node) ? $node->uid : $user->uid,
+    '#default_value' => !empty($node->nid) ? $node->uid : $user->uid,
     '#constant' => 1
   );
 
