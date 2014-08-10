@@ -349,14 +349,15 @@ function og_is_add($ac = NULL) {
  * @param object $og
  */
 function og_access_join($og) {
+  global $user;
   /**
    * type 状态：
    *  0：不公开，只有邀请才能加入，1、公开，直接加入，2、公开，审核加入，3、公开，邀请加入
    * status 状态：
    *  -1、管理员屏蔽，0：待审核，1、正常
    */
-  return $og->status == 1 && ($og->type == 1 || $og->type == 2) 
-  && !og_is_group_user($GLOBALS['user']->uid, $og) && !module_invoke_all('og_access_join', $og);
+  return !empty($user->uid) && $og->status == 1 && ($og->type == 1 || $og->type == 2) 
+  && !og_is_group_user($user->uid, $og) && !module_invoke_all('og_access_join', $og);
 }
 
 /**
