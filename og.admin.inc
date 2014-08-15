@@ -265,6 +265,15 @@ function og_admin_view() {
  */
 function og_admin_settings() {
   _og_admin_tabs();
+   
+  $form['fields']['og']['visit'] = array(
+    '#type' => 'radio',
+    '#title' => t('og', '访问计数'),
+    '#options' => array(t('og', '关闭'), t('og', '开启')),
+    '#required' => 1,
+    '#default_value' => var_get_key('og', 'visit', 1),
+    '#description' => t('og', '开启话题浏览计数')
+  );
   
   $form['fields']['og']['status'] = array(
     '#type' => 'radio',

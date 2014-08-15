@@ -81,7 +81,79 @@
 <div class="og_node">
   <?php 
     if (!empty($og->nodes)) {
-      echo $og->nodes;
+      $header = array(
+        array('data' => t('og', '标题'), 'class' => 'og_node_list_table_th_title'),
+        array('data' => t('og', '作者'), 'class' => 'og_node_list_table_th_name'),
+        array('data' => t('og', '创建时间'), 'class' => 'og_node_list_table_th_created'),
+        array('data' => t('og', '回应'), 'class' => 'og_node_list_table_th_comment'),
+        array('data' => t('og', '更新时间'), 'class' => 'og_node_list_table_th_updated'),
+      );     
+      $table = array();
+      foreach ($og->nodes as $o) {
+        $last_info = '';
+        
+        if ($o->data) {
+          $o->data = unserialize($o->data);
+          if (!empty($o->data['last_username'])) {
+            
+            if ($o->comment_count > var_get('og_comment_page_count', 20)) {
+              $query = 'page='.floor($o->comment_count/var_get('og_comment_page_count', 20));
+            } else {
+              $query = NULL;
+            }
+            $last_info = t('og', '!user <br/>于 !time 前', array( 
+              '!user' => l($o->data['last_username'], 'group/node/' . $o->nid,
+              array('query' => $query, 'fragment' => 'comment_og_' . $o->data['last_cid'])),
+              '!time' => format_interval($_SERVER['REQUEST_TIME']-$o->updated, 3)
+            ));
+          }
+        }
+        
+        if (!$last_info) {
+          $last_info = t('og', '!time 前', array('!time' => format_interval($_SERVER['REQUEST_TIME']-$o->updated, 3)));
+        }
+        
+        if ($o->top) {
+          $top = 'og_node_top';
+        } else {
+          $top = NULL;
+        }
+        
+        $rows = array(
+          array(
+            'data' => l($o->title, 'group/node/'.$o->nid),
+            'class' => 'og_node_list_title'
+          )
+        );
+      
+        $rows[] = array(
+          'data' => l($o->og_name, 'group/'.$o->alias),
+          'class' => 'og_node_list_og_name'
+        );
+      
+        $rows[] = array(
+          'data' => theme('username', $o),
+          'class' => 'og_node_list_user'
+        );
+      
+        $rows[] = array(
+          'data' => format_date($o->created, 'custom', 'y/m/d H:i:s'),
+          'class' => 'og_node_list_create'
+        );
+      
+        $rows[] = array(
+          'data' => l($o->comment_count, 'group/node/'.$o->nid, array('fragment' => 'og_node_comment_wrapper')),
+          'class' => 'og_node_list_comment'
+        );
+        
+        $rows[] = array(
+          'data' => $last_info,
+          'class' => 'og_node_list_update'
+        );
+        
+        $table[] = array('data' => $rows, 'class' => $top);
+      }
+      echo theme('table', $header, $table, array('id' => 'og_node_list_table_og_front_' . $og->oid, 'class' => 'og_node_list_table'));
     } else if (!empty($og->content)) {
       echo $og->content;
     } else {

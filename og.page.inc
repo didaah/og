@@ -436,7 +436,11 @@ function og_node_view($node) {
       l(t('og', '话题'), 'group/node'),
     );
   }
-  
+ 
+  if (var_get_key('og', 'visit', 1)) {
+    db_exec('UPDATE {og_node} SET visit = ? WHERE nid = ?', array(($node->visit+1), $node->nid));
+  }
+
   $breadcrumb[] = l($node->og->og_name, $node->og->path);
 
   if (!empty($node->fields) && is_array($node->og->default_field)) {

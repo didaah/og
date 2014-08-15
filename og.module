@@ -672,14 +672,6 @@ function og_view($og, $op = 'page') {
     if (module_exists('solr')) {
       $og->search_form = dd_get_form('solr_search_form', 'og_node', NULL, array('oid' => $og->oid));
     }
-
-    $header = array(
-      array('data' => t('og', '标题'), 'class' => 'og_node_list_table_th_title'),
-      array('data' => t('og', '作者'), 'class' => 'og_node_list_table_th_name'),
-      array('data' => t('og', '创建时间'), 'class' => 'og_node_list_table_th_created'),
-      array('data' => t('og', '回应'), 'class' => 'og_node_list_table_th_comment'),
-      array('data' => t('og', '更新时间'), 'class' => 'og_node_list_table_th_updated'),
-    );
     
     if ($user->uid > 0) {
       $breadcrumb = array(
@@ -717,7 +709,6 @@ function og_view($og, $op = 'page') {
     dd_set_breadcrumb($breadcrumb);
 
     if (!empty($og->node_count)) {
-
       $sql_args = array();
 
       if (!empty($og->term)) {
@@ -732,11 +723,9 @@ function og_view($og, $op = 'page') {
         $sql_args = array($og->oid);
       }
 
-      if ($fetch = pager_query($query . ' ORDER BY n.top DESC, n.updated DESC', 20, 0, NULL, $sql_args)) {
-        $og->nodes = og_node_list_default($fetch, $header, 0, 1, 1, 'og_front_' . $og->oid);
+      if ($og->nodes = pager_query($query . ' ORDER BY n.top DESC, n.updated DESC', 20, 0, NULL, $sql_args)) {
         $og->pager = pager_view();
       }
-
     }
     
     dd_set_meta(array(
