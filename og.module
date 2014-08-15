@@ -712,12 +712,12 @@ function og_view($og, $op = 'page') {
       $sql_args = array();
 
       if (!empty($og->term)) {
-        $query = 'SELECT DISTINCT(ftn.nid), n.data, n.top, n.title, n.nid, n.uid, n.created, 
+        $query = 'SELECT DISTINCT(ftn.nid), n.data, n.top, n.title, n.nid, n.uid, n.created, n.visit, 
         n.comment_count, n.updated, u.name FROM {og_node} n INNER JOIN {users} u ON n.uid = u.uid
         INNER JOIN {fields_term_node} ftn ON n.nid = ftn.nid WHERE ftn.tid = ? AND n.oid = ? AND n.node_status > 0';     
         $sql_args = array($og->term->tid, $og->oid);
       } else {
-        $query = 'SELECT n.data, n.top, n.title, n.nid, n.uid, n.created, 
+        $query = 'SELECT n.data, n.top, n.title, n.nid, n.uid, n.created, n.visit,
         n.comment_count, n.updated, u.name FROM {og_node} n INNER JOIN {users} u ON n.uid = u.uid WHERE n.oid = ? 
         AND n.node_status > 0'; 
         $sql_args = array($og->oid);
