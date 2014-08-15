@@ -4,6 +4,24 @@
 /**
  * @Implement of hook_update_x()
  */
+function og_update_14() {
+  /**
+   * 为 og_node 表添加 visit 字段
+   */
+  $field = array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => '浏览次数',
+  );
+  
+  return db_add_field('og_node', 'visit', $field);
+}
+
+/**
+ * @Implement of hook_update_x()
+ */
 function og_update_13() {
   /**
    * 为 og_node 表添加 ext_id 字段
@@ -300,6 +318,13 @@ function og_schema() {
         'default' => 0,
         'description' => '创建时间',
       ),
+      'visit' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => '浏览次数',
+      ),     
       'format' => array(
         'type' => 'int',
         'unsigned' => TRUE,
