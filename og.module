@@ -1934,4 +1934,11 @@ function og_editor_info() {
   );
 }
 
+/**
+ * @Implement of hook_user_view_tabs()
+ */
+function og_user_view_tabs(&$ac) {
+  $ac->tabs[] = l(t('og', '!title的小组', array('!title' => $ac->title)), $ac->path . '/group');
+  $ac->tabs[] = l(t('og', '!title的话题', array('!title' => $ac->title)), $ac->path . '/group/node');
+}
 
