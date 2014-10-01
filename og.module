@@ -668,11 +668,6 @@ function og_view($og, $op = 'page') {
   }
  
   if ($op == 'page') {
-
-    if (module_exists('solr')) {
-      $og->search_form = dd_get_form('solr_search_form', 'og_node', NULL, array('oid' => $og->oid));
-    }
-    
     if ($user->uid > 0) {
       $breadcrumb = array(
         l(t('og', '小组'), 'group/all'), l(t('og', '我的小组'), $user->path . '/group')
