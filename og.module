@@ -1159,6 +1159,20 @@ function og_comment_is_delete($comment) {
 }
 
 /**
+ * @Implement of hook_comment_is_hide()
+ */
+function og_comment_is_hide($comment) {
+  if ($comment->ext_type == 'og') {
+    /**
+     * 话题发布人可以屏蔽评论
+     */
+    if ($node = og_node_load($comment->ext_id)) {
+      $comment->is_hide = og_access_node_view($node) && $GLOBALS['user']->uid == $node->uid;
+    }
+  }
+}
+
+/**
  * @Implement of hook_comment_is_update()
  * 
  * 评论编辑权限
