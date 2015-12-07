@@ -74,7 +74,7 @@ function og_node_form($node, $og = NULL, $node_type = NULL) {
     
   global $editor_disabled, $editor_alter_config;
   
-  if (empty($node->og->data['node_editor'])) {
+  if (empty($node->og->data['node_editor']) || filter_is_filter($node->format, 'system', 'php')) {
     // 禁用编辑器
     $editor_disabled['og_node'] = true;
   }
